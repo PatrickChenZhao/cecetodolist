@@ -63,6 +63,10 @@ select:focus-visible,
   display: none;
 }
 
+.mobile-sidebar-layer {
+  display: none;
+}
+
 .app-root {
   min-height: 100vh;
 }
@@ -2168,6 +2172,7 @@ select:focus-visible,
   }
 
   .mobile-sidebar-layer {
+    display: block;
     position: fixed;
     z-index: 100;
     inset: 0;
