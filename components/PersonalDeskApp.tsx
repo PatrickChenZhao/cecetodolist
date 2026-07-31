@@ -129,9 +129,13 @@ export function PersonalDeskApp() {
           {view === "today" && (
             <Dashboard
               items={tasks.items}
+              dashboardTitle={tasks.settings.dashboardTitle}
               onOpen={(item) => setSelectedId(item.id)}
               onComplete={complete}
               onAdd={focusComposer}
+              onDashboardTitleChange={(dashboardTitle) =>
+                tasks.updateSettings({ dashboardTitle })
+              }
             />
           )}
 
@@ -142,9 +146,13 @@ export function PersonalDeskApp() {
             <Dashboard
               items={tasks.items}
               module={view}
+              dashboardTitle={tasks.settings.dashboardTitle}
               onOpen={(item) => setSelectedId(item.id)}
               onComplete={complete}
               onAdd={focusComposer}
+              onDashboardTitleChange={(dashboardTitle) =>
+                tasks.updateSettings({ dashboardTitle })
+              }
             />
           )}
 

@@ -8,7 +8,11 @@ import {
   Video,
 } from "lucide-react";
 import { isSameDay, parseISO } from "date-fns";
-import { MODULE_META, MODULE_ORDER } from "@/lib/constants";
+import {
+  DEFAULT_DASHBOARD_TITLE,
+  MODULE_META,
+  MODULE_ORDER,
+} from "@/lib/constants";
 import { localDateLabel, todayKey } from "@/lib/dates/dateCalculations";
 import { sortTasks } from "@/lib/dates/sorting";
 import { TaskCard } from "@/components/tasks/TaskCard";
@@ -88,18 +92,30 @@ function ModuleColumn({
 interface DashboardProps {
   items: TaskItem[];
   module?: ModuleType;
+  dashboardTitle: string;
   onOpen: (item: TaskItem) => void;
   onComplete: (item: TaskItem) => void;
   onAdd: (module: ModuleType) => void;
+  onDashboardTitleChange: (title: string) => void;
 }
 
 export function Dashboard({
   items,
   module,
+  dashboardTitle,
   onOpen,
   onComplete,
   onAdd,
+  onDashboardTitleChange,
 }: DashboardProps) {
+  const saveDashboardTitle = (input: HTMLInputElement) => {
+    const nextTitle = input.value.trim() || DEFAULT_DASHBOARD_TITLE;
+    input.value = nextTitle;
+    if (nextTitle !== dashboardTitle) {
+      onDashboardTitleChange(nextTitle);
+    }
+  };
+
   const activeItems = items.filter((item) => item.status === "active");
   const completedToday = items.filter((item) =>
     (!module || item.module === module)
@@ -121,7 +137,24 @@ export function Dashboard({
       <header className="dashboard-header">
         <div>
           <span className="eyebrow">{module ? "模块视图" : "每日工作台"}</span>
-          <h1>{scope}</h1>
+          {module ? (
+            <h1>{scope}</h1>
+          ) : (
+            <input
+              key={dashboardTitle}
+              className="dashboard-title-input"
+              defaultValue={dashboardTitle}
+              onBlur={(event) => saveDashboardTitle(event.currentTarget)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  event.currentTarget.blur();
+                }
+              }}
+              aria-label="编辑首页标题"
+              maxLength={50}
+            />
+          )}
           <p>{localDateLabel()}</p>
         </div>
         <div className="today-progress" aria-label="今日完成进度">

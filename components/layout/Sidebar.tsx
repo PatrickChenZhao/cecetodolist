@@ -11,9 +11,7 @@ import {
   Leaf,
   Megaphone,
   Menu,
-  Sparkles,
   Video,
-  X,
 } from "lucide-react";
 import { APP_NAME, MODULE_META } from "@/lib/constants";
 import type { AppView } from "@/types/tasks";
@@ -55,9 +53,6 @@ export function Sidebar({
   const renderContent = (compact: boolean) => (
     <>
       <div className="sidebar-brand">
-        <span className="brand-mark" aria-hidden="true">
-          <Sparkles size={18} strokeWidth={2.2} />
-        </span>
         {!compact && (
           <span className="brand-copy">
             <strong>{APP_NAME}</strong>
@@ -71,13 +66,6 @@ export function Sidebar({
           title={compact ? "展开导航栏" : "收起导航栏"}
         >
           {compact ? <ChevronRight size={17} /> : <ChevronLeft size={17} />}
-        </button>
-        <button
-          className="icon-button mobile-close mobile-only"
-          onClick={onMobileClose}
-          aria-label="关闭导航菜单"
-        >
-          <X size={19} />
         </button>
       </div>
 

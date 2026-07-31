@@ -80,6 +80,7 @@ export const taskItemSchema = z.union([
 ]);
 
 export const settingsSchema = z.object({
+  dashboardTitle: z.string().trim().min(1).max(50).default("你好 Cecilia"),
   sidebarCollapsed: z.boolean(),
   remindersEnabled: z.boolean(),
   browserNotifications: z.boolean(),

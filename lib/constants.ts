@@ -2,6 +2,7 @@ import type { DeskSettings, ModuleType } from "@/types/tasks";
 
 export const APP_NAME = "Personal Desk";
 export const DATA_VERSION = "1.0.0" as const;
+export const DEFAULT_DASHBOARD_TITLE = "你好 Cecilia";
 
 export const STORAGE_KEYS = {
   data: "personal-desk:data",
@@ -11,6 +12,7 @@ export const STORAGE_KEYS = {
 } as const;
 
 export const DEFAULT_SETTINGS: DeskSettings = {
+  dashboardTitle: DEFAULT_DASHBOARD_TITLE,
   sidebarCollapsed: false,
   remindersEnabled: true,
   browserNotifications: false,

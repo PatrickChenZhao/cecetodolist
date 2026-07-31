@@ -43,6 +43,7 @@ export interface WorkflowItem extends BaseItem {
 export type TaskItem = WorkItem | PersonalItem | WorkflowItem;
 
 export interface DeskSettings {
+  dashboardTitle: string;
   sidebarCollapsed: boolean;
   remindersEnabled: boolean;
   browserNotifications: boolean;
