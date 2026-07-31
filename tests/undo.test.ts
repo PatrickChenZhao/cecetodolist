@@ -10,9 +10,10 @@ import type { WorkItem } from "@/types/tasks";
 const item: WorkItem = {
   id: "work-1",
   module: "work",
+  workType: "event",
   title: "完成训练详情页面",
   status: "active",
-  urgency: "today",
+  urgency: "urgent",
   dueDate: "2026-07-31",
   createdAt: "2026-07-31T00:00:00.000Z",
   updatedAt: "2026-07-31T00:00:00.000Z",

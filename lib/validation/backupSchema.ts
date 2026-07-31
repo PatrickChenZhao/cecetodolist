@@ -4,6 +4,7 @@ import {
   AD_STAGE_NAMES,
   DATA_VERSION,
   SOCIAL_STAGE_NAMES,
+  WORK_PROCESS_STAGE_NAMES,
 } from "@/lib/constants";
 
 const dateKey = z.string().refine(
@@ -25,12 +26,24 @@ const base = {
   completedAt: nullableIsoDate,
 };
 
-const workItemSchema = z.object({
+const workEventItemSchema = z.object({
+  ...base,
+  module: z.literal("work"),
+  workType: z.literal("event"),
+  urgency: z.enum(["urgent", "week", "month", "notUrgent"]),
+  dueDate: dateKey.nullable(),
+});
+
+const legacyWorkItemSchema = z.object({
   ...base,
   module: z.literal("work"),
   urgency: z.enum(["today", "week", "month"]),
   dueDate: dateKey,
-});
+}).transform((item) => ({
+  ...item,
+  workType: "event" as const,
+  urgency: item.urgency === "today" ? "urgent" as const : item.urgency,
+}));
 
 const personalItemSchema = z.object({
   ...base,
@@ -46,6 +59,37 @@ const stageSchema = z.object({
   dateSource: z.enum(["automatic", "manual"]),
   status: z.enum(["waiting", "active", "overdue", "completed"]),
   completedAt: nullableIsoDate,
+});
+
+const workProcessStageSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  status: z.enum(["waiting", "active", "overdue", "completed"]),
+  completedAt: nullableIsoDate,
+});
+
+const workProcessItemSchema = z.object({
+  ...base,
+  module: z.literal("work"),
+  workType: z.literal("process"),
+  dueDate: dateKey,
+  currentStageId: z.string().min(1),
+  stages: z.array(workProcessStageSchema),
+}).superRefine((item, context) => {
+  if (item.stages.length !== WORK_PROCESS_STAGE_NAMES.length) {
+    context.addIssue({
+      code: "custom",
+      message: `work process 阶段数量应为 ${WORK_PROCESS_STAGE_NAMES.length}`,
+      path: ["stages"],
+    });
+  }
+  if (!item.stages.some((stage) => stage.id === item.currentStageId)) {
+    context.addIssue({
+      code: "custom",
+      message: "currentStageId 不存在",
+      path: ["currentStageId"],
+    });
+  }
 });
 
 const workflowItemSchema = z.object({
@@ -74,13 +118,16 @@ const workflowItemSchema = z.object({
 });
 
 export const taskItemSchema = z.union([
-  workItemSchema,
+  workProcessItemSchema,
+  workEventItemSchema,
+  legacyWorkItemSchema,
   personalItemSchema,
   workflowItemSchema,
 ]);
 
 export const settingsSchema = z.object({
   dashboardTitle: z.string().trim().min(1).max(50).default("你好 Cecilia"),
+  interfaceTheme: z.enum(["blueBlack", "bright"]).default("blueBlack"),
   sidebarCollapsed: z.boolean(),
   remindersEnabled: z.boolean(),
   browserNotifications: z.boolean(),

@@ -13,13 +13,16 @@ import { zhCN } from "date-fns/locale";
 import {
   AD_STAGE_NAMES,
   SOCIAL_STAGE_NAMES,
+  WORK_PROCESS_STAGE_NAMES,
 } from "@/lib/constants";
 import type {
+  AnyWorkflowItem,
+  AnyWorkflowStage,
   PersonalItem,
   TaskItem,
+  WorkProcessStage,
   WorkflowItem,
   WorkflowStage,
-  WorkItem,
 } from "@/types/tasks";
 
 const SOCIAL_OFFSETS = [7, 5, 3];
@@ -34,7 +37,7 @@ export function localDateLabel(now = new Date()) {
 }
 
 export function dueDateForWork(
-  urgency: WorkItem["urgency"],
+  urgency: "today" | "week" | "month",
   now = new Date(),
 ) {
   if (urgency === "today") return todayKey(now);
@@ -42,6 +45,15 @@ export function dueDateForWork(
     return format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
   }
   return format(endOfMonth(now), "yyyy-MM-dd");
+}
+
+export function createWorkProcessStages(): WorkProcessStage[] {
+  return WORK_PROCESS_STAGE_NAMES.map((name, index) => ({
+    id: crypto.randomUUID(),
+    name,
+    status: index === 0 ? "active" : "waiting",
+    completedAt: null,
+  }));
 }
 
 export function dueDateForPersonal(
@@ -106,7 +118,11 @@ export function recalculateWorkflowDates(
   return next;
 }
 
-export function getCurrentStage(item: WorkflowItem) {
+export function isWorkflowTask(item: TaskItem): item is AnyWorkflowItem {
+  return "stages" in item;
+}
+
+export function getCurrentStage(item: AnyWorkflowItem) {
   return item.stages.find((stage) => stage.id === item.currentStageId)
     ?? item.stages.find((stage) => stage.status === "active")
     ?? item.stages[0];
@@ -114,7 +130,14 @@ export function getCurrentStage(item: WorkflowItem) {
 
 export function getItemDueDate(item: TaskItem) {
   if (item.module === "social" || item.module === "advertising") {
-    return getCurrentStage(item)?.dueDate ?? null;
+    const currentStage = item.stages.find(
+      (stage) => stage.id === item.currentStageId,
+    ) ?? item.stages.find((stage) => stage.status === "active")
+      ?? item.stages[0];
+    return currentStage?.dueDate ?? null;
+  }
+  if (item.module === "work" && item.workType === "process") {
+    return item.dueDate;
   }
   return "dueDate" in item ? item.dueDate : null;
 }
@@ -151,17 +174,21 @@ export function displayCompletedAt(value: string, now = new Date()) {
 }
 
 export function effectiveStageStatus(
-  stage: WorkflowStage,
+  stage: AnyWorkflowStage,
   now = new Date(),
 ) {
-  if (stage.status === "active" && isDateOverdue(stage.dueDate, now)) {
+  if (
+    stage.status === "active"
+    && "dueDate" in stage
+    && isDateOverdue(stage.dueDate, now)
+  ) {
     return "overdue" as const;
   }
   return stage.status;
 }
 
-export function advanceWorkflow(
-  item: WorkflowItem,
+export function advanceWorkflow<T extends AnyWorkflowItem>(
+  item: T,
   stageId: string,
   now = new Date(),
 ) {
@@ -195,7 +222,7 @@ export function advanceWorkflow(
     status: isFinal ? "completed" as const : item.status,
     completedAt: isFinal ? completedAt : item.completedAt,
     updatedAt: completedAt,
-  };
+  } as T;
 }
 
 export function isDueForAttention(item: TaskItem, now = new Date()) {

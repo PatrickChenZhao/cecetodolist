@@ -13,12 +13,11 @@ import {
 import {
   MODULE_META,
   PERSONAL_URGENCY_LABELS,
-  WORK_URGENCY_LABELS,
 } from "@/lib/constants";
 import {
+  createWorkProcessStages,
   createWorkflowStages,
   dueDateForPersonal,
-  dueDateForWork,
   recalculateWorkflowDates,
   todayKey,
 } from "@/lib/dates/dateCalculations";
@@ -26,9 +25,10 @@ import type {
   ModuleType,
   PersonalItem,
   TaskItem,
+  WorkItem,
+  WorkProcessItem,
   WorkflowItem,
   WorkflowStage,
-  WorkItem,
 } from "@/types/tasks";
 
 const icons = {
@@ -104,8 +104,10 @@ export function DynamicComposer({
   onCreate,
 }: DynamicComposerProps) {
   const [workTitle, setWorkTitle] = useState("");
+  const [workType, setWorkType] = useState<"process" | "event">("event");
   const [workUrgency, setWorkUrgency] =
-    useState<WorkItem["urgency"]>("today");
+    useState<WorkItem["urgency"]>("week");
+  const [workProcessDueDate, setWorkProcessDueDate] = useState(todayKey());
   const [personalTitle, setPersonalTitle] = useState("");
   const [personalUrgency, setPersonalUrgency] =
     useState<PersonalItem["urgency"]>("week");
@@ -130,14 +132,31 @@ export function DynamicComposer({
 
   function submit() {
     if (!title.trim()) return;
+    if (module === "work" && workType === "process" && !workProcessDueDate) {
+      return;
+    }
 
     if (module === "work") {
-      onCreate({
-        ...baseItem("work", workTitle),
-        module: "work",
-        urgency: workUrgency,
-        dueDate: dueDateForWork(workUrgency),
-      });
+      if (workType === "process") {
+        const stages = createWorkProcessStages();
+        const item: WorkProcessItem = {
+          ...baseItem("work", workTitle),
+          module: "work",
+          workType: "process",
+          dueDate: workProcessDueDate,
+          currentStageId: stages[0].id,
+          stages,
+        };
+        onCreate(item);
+      } else {
+        onCreate({
+          ...baseItem("work", workTitle),
+          module: "work",
+          workType: "event",
+          urgency: workUrgency,
+          dueDate: dueDateForPersonal(workUrgency),
+        });
+      }
       setWorkTitle("");
       return;
     }
@@ -181,7 +200,9 @@ export function DynamicComposer({
       rows={1}
       placeholder={
         module === "work"
-          ? "输入一个新的工作任务……"
+          ? workType === "process"
+            ? "输入工作流程名称……"
+            : "输入工作事件……"
           : module === "social"
             ? "输入内容名称……"
             : module === "advertising"
@@ -215,22 +236,44 @@ export function DynamicComposer({
         } as React.CSSProperties}
       >
         <div className="composer-topline">
-          <label className="module-select">
-            <Icon size={16} />
-            <select
-              value={module}
-              onChange={(event) =>
-                onModuleChange(event.target.value as ModuleType)
-              }
-              aria-label="选择事项模块"
-            >
-              <option value="work">工作项目</option>
-              <option value="social">自媒体日常</option>
-              <option value="advertising">广告项目</option>
-              <option value="personal">个人生活</option>
-            </select>
-            <ChevronDown size={14} />
-          </label>
+          <div className="composer-source-controls">
+            <label className="module-select">
+              <Icon size={16} />
+              <select
+                value={module}
+                onChange={(event) =>
+                  onModuleChange(event.target.value as ModuleType)
+                }
+                aria-label="选择事项模块"
+              >
+                <option value="work">工作项目</option>
+                <option value="social">自媒体日常</option>
+                <option value="advertising">广告项目</option>
+                <option value="personal">个人生活</option>
+              </select>
+              <ChevronDown size={14} />
+            </label>
+            {module === "work" && (
+              <div
+                className="work-type-toggle"
+                role="group"
+                aria-label="工作项目类型"
+              >
+                <button
+                  data-active={workType === "process"}
+                  onClick={() => setWorkType("process")}
+                >
+                  流程
+                </button>
+                <button
+                  data-active={workType === "event"}
+                  onClick={() => setWorkType("event")}
+                >
+                  事件
+                </button>
+              </div>
+            )}
+          </div>
           <span className="composer-hint">
             <CalendarDays size={13} /> 日期自动按本地时间保存
           </span>
@@ -238,22 +281,38 @@ export function DynamicComposer({
 
         <div className="composer-title-input">{input}</div>
 
-        {module === "work" && (
+        {module === "work" && workType === "event" && (
           <div className="composer-options">
             <span className="option-label">紧急程度</span>
             <div className="segmented-control">
-              {(Object.keys(WORK_URGENCY_LABELS) as WorkItem["urgency"][]).map(
+              {(Object.keys(
+                PERSONAL_URGENCY_LABELS,
+              ) as WorkItem["urgency"][]).map(
                 (urgency) => (
                   <button
                     key={urgency}
                     data-active={workUrgency === urgency}
                     onClick={() => setWorkUrgency(urgency)}
                   >
-                    {WORK_URGENCY_LABELS[urgency]}
+                    {PERSONAL_URGENCY_LABELS[urgency]}
                   </button>
                 ),
               )}
             </div>
+          </div>
+        )}
+
+        {module === "work" && workType === "process" && (
+          <div className="work-process-options">
+            <label className="date-field work-process-due-date">
+              <span>任务截止时间</span>
+              <input
+                type="date"
+                required
+                value={workProcessDueDate}
+                onChange={(event) => setWorkProcessDueDate(event.target.value)}
+              />
+            </label>
           </div>
         )}
 
@@ -297,7 +356,12 @@ export function DynamicComposer({
           <button
             className="create-button"
             onClick={submit}
-            disabled={!title.trim()}
+            disabled={
+              !title.trim()
+              || (module === "work"
+                && workType === "process"
+                && !workProcessDueDate)
+            }
           >
             创建 <ArrowUp size={15} />
           </button>

@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   advanceWorkflow,
+  createWorkProcessStages,
   createWorkflowStages,
   dueDateForPersonal,
   dueDateForWork,
   effectiveStageStatus,
+  getItemDueDate,
   recalculateWorkflowDates,
 } from "@/lib/dates/dateCalculations";
-import type { WorkflowItem } from "@/types/tasks";
+import type { WorkProcessItem, WorkflowItem } from "@/types/tasks";
 
 const referenceDate = new Date(2026, 6, 31, 12, 0, 0);
 
@@ -27,6 +29,19 @@ describe("紧急程度日期", () => {
 });
 
 describe("阶段日期计算", () => {
+  it("工作流程固定生成六个无阶段截止时间的节点", () => {
+    const stages = createWorkProcessStages();
+    expect(stages.map((stage) => stage.name)).toEqual([
+      "Brief",
+      "Response",
+      "Book Media",
+      "IMBA",
+      "PCA",
+      "Invoice",
+    ]);
+    expect(stages.every((stage) => !("dueDate" in stage))).toBe(true);
+  });
+
   it("按 7、5、3 天生成自媒体流程", () => {
     const stages = createWorkflowStages("social", "2026-08-01");
     expect(stages.map((stage) => stage.dueDate)).toEqual([
@@ -125,5 +140,28 @@ describe("阶段推进", () => {
     }
     expect(item.status).toBe("completed");
     expect(item.completedAt).not.toBeNull();
+  });
+
+  it("工作流程使用统一任务截止日期并可逐阶段推进", () => {
+    const stages = createWorkProcessStages();
+    const item: WorkProcessItem = {
+      id: "work-process-1",
+      module: "work",
+      workType: "process",
+      title: "Campaign launch",
+      status: "active",
+      dueDate: "2026-08-20",
+      currentStageId: stages[0].id,
+      stages,
+      createdAt: "2026-07-31T00:00:00.000Z",
+      updatedAt: "2026-07-31T00:00:00.000Z",
+      completedAt: null,
+    };
+
+    expect(getItemDueDate(item)).toBe("2026-08-20");
+    const next = advanceWorkflow(item, item.currentStageId, referenceDate);
+    expect(next.stages[0].status).toBe("completed");
+    expect(next.stages[1].status).toBe("active");
+    expect(next.currentStageId).toBe(next.stages[1].id);
   });
 });

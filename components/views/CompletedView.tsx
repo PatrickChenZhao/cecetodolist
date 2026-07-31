@@ -90,8 +90,7 @@ export function CompletedView({
               <div className="completed-list">
                 {group.items.map((item) => {
                   const meta = MODULE_META[item.module];
-                  const finalStage = item.module === "social"
-                    || item.module === "advertising"
+                  const finalStage = "stages" in item
                     ? item.stages[item.stages.length - 1]?.name
                     : null;
                   return (

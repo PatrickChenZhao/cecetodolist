@@ -6,6 +6,7 @@ import {
   BellRing,
   CheckCircle2,
   Clock3,
+  Palette,
   ShieldAlert,
 } from "lucide-react";
 import { MODULE_META } from "@/lib/constants";
@@ -57,6 +58,42 @@ export function RemindersView({
       </header>
 
       <div className="settings-grid">
+        <section className="settings-card theme-settings-card">
+          <header>
+            <span><Palette size={18} /></span>
+            <div>
+              <h2>界面配色</h2>
+              <p>选择工作台的背景和窗口风格。</p>
+            </div>
+          </header>
+          <div className="theme-options" role="radiogroup" aria-label="界面配色">
+            {([
+              ["blueBlack", "蓝黑", "深色背景与玻璃窗口"],
+              ["bright", "明亮", "浅色背景与明亮窗口"],
+            ] as const).map(([value, label, description]) => (
+              <button
+                key={value}
+                className="theme-option"
+                data-active={settings.interfaceTheme === value}
+                onClick={() => onSettingsChange({ interfaceTheme: value })}
+                role="radio"
+                aria-checked={settings.interfaceTheme === value}
+              >
+                <span className="theme-preview" data-theme-preview={value}>
+                  <i />
+                  <b />
+                  <b />
+                </span>
+                <span>
+                  <strong>{label}</strong>
+                  <small>{description}</small>
+                </span>
+                <i className="theme-selected-dot" aria-hidden="true" />
+              </button>
+            ))}
+          </div>
+        </section>
+
         <section className="settings-card">
           <header>
             <span><Bell size={18} /></span>

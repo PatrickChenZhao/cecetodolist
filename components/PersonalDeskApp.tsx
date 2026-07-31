@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   Check,
@@ -31,6 +31,10 @@ export function PersonalDeskApp() {
     [tasks.items, selectedId],
   );
 
+  useEffect(() => {
+    document.documentElement.dataset.theme = tasks.settings.interfaceTheme;
+  }, [tasks.settings.interfaceTheme]);
+
   const navigate = useCallback((next: AppView) => {
     setView(next);
     if (
@@ -51,7 +55,7 @@ export function PersonalDeskApp() {
   }, []);
 
   const complete = useCallback((item: TaskItem) => {
-    if (item.module === "social" || item.module === "advertising") {
+    if ("stages" in item) {
       tasks.completeStage(item.id);
     } else {
       tasks.completeItem(item.id);
@@ -215,6 +219,7 @@ export function PersonalDeskApp() {
         actions={tasks.pendingActions}
         onUndo={tasks.undoAction}
         now={tasks.clockNow}
+        avoidComposer={showComposer}
       />
     </div>
   );

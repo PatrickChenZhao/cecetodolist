@@ -10,9 +10,10 @@ function work(
   return {
     id,
     module: "work",
+    workType: "event",
     title: id,
     status: "active",
-    urgency: "today",
+    urgency: "urgent",
     dueDate,
     createdAt,
     updatedAt: createdAt,

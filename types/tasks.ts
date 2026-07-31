@@ -2,6 +2,8 @@ export type ModuleType = "work" | "social" | "advertising" | "personal";
 export type ItemStatus = "active" | "completed";
 export type StageStatus = "waiting" | "active" | "overdue" | "completed";
 export type DateSource = "automatic" | "manual";
+export type EventUrgency = "urgent" | "week" | "month" | "notUrgent";
+export type InterfaceTheme = "blueBlack" | "bright";
 
 export interface BaseItem {
   id: string;
@@ -15,13 +17,29 @@ export interface BaseItem {
 
 export interface WorkItem extends BaseItem {
   module: "work";
-  urgency: "today" | "week" | "month";
+  workType: "event";
+  urgency: EventUrgency;
+  dueDate: string | null;
+}
+
+export interface WorkProcessStage {
+  id: string;
+  name: string;
+  status: StageStatus;
+  completedAt: string | null;
+}
+
+export interface WorkProcessItem extends BaseItem {
+  module: "work";
+  workType: "process";
   dueDate: string;
+  currentStageId: string;
+  stages: WorkProcessStage[];
 }
 
 export interface PersonalItem extends BaseItem {
   module: "personal";
-  urgency: "urgent" | "week" | "month" | "notUrgent";
+  urgency: EventUrgency;
   dueDate: string | null;
 }
 
@@ -40,10 +58,13 @@ export interface WorkflowItem extends BaseItem {
   stages: WorkflowStage[];
 }
 
-export type TaskItem = WorkItem | PersonalItem | WorkflowItem;
+export type AnyWorkflowStage = WorkflowStage | WorkProcessStage;
+export type AnyWorkflowItem = WorkflowItem | WorkProcessItem;
+export type TaskItem = WorkItem | WorkProcessItem | PersonalItem | WorkflowItem;
 
 export interface DeskSettings {
   dashboardTitle: string;
+  interfaceTheme: InterfaceTheme;
   sidebarCollapsed: boolean;
   remindersEnabled: boolean;
   browserNotifications: boolean;

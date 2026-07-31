@@ -14,6 +14,7 @@ import {
   advanceWorkflow,
   getCurrentStage,
   isDueForAttention,
+  isWorkflowTask,
   todayKey,
 } from "@/lib/dates/dateCalculations";
 import { mergeItems } from "@/lib/storage/backup";
@@ -28,11 +29,11 @@ import {
   restorePendingAction,
 } from "@/lib/undo/actions";
 import type {
+  AnyWorkflowItem,
   BackupPayload,
   DeskSettings,
   PendingAction,
   TaskItem,
-  WorkflowItem,
 } from "@/types/tasks";
 
 interface DeskState {
@@ -315,9 +316,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
 
   const completeStage = useCallback((itemId: string) => {
     const item = stateRef.current.items.find(
-      (entry): entry is WorkflowItem =>
-        entry.id === itemId
-        && (entry.module === "social" || entry.module === "advertising"),
+      (entry): entry is AnyWorkflowItem =>
+        entry.id === itemId && isWorkflowTask(entry),
     );
     if (!item || item.status === "completed") return;
     const current = getCurrentStage(item);

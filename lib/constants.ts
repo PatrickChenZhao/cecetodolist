@@ -13,6 +13,7 @@ export const STORAGE_KEYS = {
 
 export const DEFAULT_SETTINGS: DeskSettings = {
   dashboardTitle: DEFAULT_DASHBOARD_TITLE,
+  interfaceTheme: "blueBlack",
   sidebarCollapsed: false,
   remindersEnabled: true,
   browserNotifications: false,
@@ -77,4 +78,16 @@ export const PERSONAL_URGENCY_LABELS = {
 
 export const SOCIAL_STAGE_NAMES = ["脚本", "完成拍摄", "剪完视频", "发布"];
 export const AD_STAGE_NAMES = ["大纲", "脚本", "完成拍摄", "初稿", "发布"];
+export const WORK_PROCESS_STAGE_NAMES = [
+  "Brief",
+  "Response",
+  "Book Media",
+  "IMBA",
+  "PCA",
+  "Invoice",
+];
+export const WORK_PROCESS_STAGE_SHORT_LABELS: Record<string, string> = {
+  Response: "Respon",
+  "Book Media": "BM",
+};
 export const UNDO_WINDOW_MS = 15_000;
