@@ -19,12 +19,24 @@ import { CompletedView } from "@/components/views/CompletedView";
 import { DeadlineCalendarView } from "@/components/views/DeadlineCalendarView";
 import { RemindersView } from "@/components/views/RemindersView";
 import { useTasks } from "@/context/TaskContext";
+import { LanguageProvider } from "@/context/LanguageContext";
 import { downloadQuarantined } from "@/lib/storage/storage";
 import { getCurrentStage, isWorkflowTask } from "@/lib/dates/dateCalculations";
 import type { AppView, ModuleType, TaskItem } from "@/types/tasks";
 
 export function PersonalDeskApp() {
   const tasks = useTasks();
+  const language = tasks.settings.language;
+  const tr = (chinese: string, english: string) =>
+    language === "en" ? english : chinese;
+  const warningMessage = tasks.storageError ?? tasks.warning;
+  const localizedWarningMessage = language === "en"
+    && warningMessage
+    && /[\u3400-\u9fff]/.test(warningMessage)
+    ? tasks.storageError
+      ? "Browser storage could not save the latest changes."
+      : "Some saved data could not be read and was safely isolated."
+    : warningMessage;
   const [view, setView] = useState<AppView>("today");
   const [composerModule, setComposerModule] = useState<ModuleType>("work");
   const [composerCollapsed, setComposerCollapsed] = useState(false);
@@ -43,6 +55,10 @@ export function PersonalDeskApp() {
   useEffect(() => {
     document.documentElement.dataset.theme = tasks.settings.interfaceTheme;
   }, [tasks.settings.interfaceTheme]);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
 
   const navigate = useCallback((next: AppView) => {
     setView(next);
@@ -93,7 +109,7 @@ export function PersonalDeskApp() {
         <span className="loading-mark" />
         <div>
           <strong>Personal Desk</strong>
-          <p>正在整理你的工作台…</p>
+          <p>{tr("正在整理你的工作台…", "Getting your workspace ready…")}</p>
         </div>
       </div>
     );
@@ -106,6 +122,7 @@ export function PersonalDeskApp() {
     || view === "personal";
 
   return (
+    <LanguageProvider language={language}>
     <div
       className={`app-root ${
         showComposer && composerCollapsed ? "composer-collapsed" : ""
@@ -137,18 +154,20 @@ export function PersonalDeskApp() {
             <div className="warning-banner">
               <AlertTriangle size={17} />
               <div>
-                <strong>{tasks.storageError ? "保存遇到问题" : "已隔离问题数据"}</strong>
-                <p>{tasks.storageError ?? tasks.warning}</p>
+                <strong>{tasks.storageError
+                  ? tr("保存遇到问题", "Unable to save")
+                  : tr("已隔离问题数据", "Problem data isolated")}</strong>
+                <p>{localizedWarningMessage}</p>
               </div>
               {tasks.quarantined.length > 0 && (
                 <button onClick={() => downloadQuarantined(tasks.quarantined)}>
-                  <Download size={14} /> 导出问题数据
+                  <Download size={14} /> {tr("导出问题数据", "Export problem data")}
                 </button>
               )}
               <button
                 className="icon-button"
                 onClick={tasks.dismissWarning}
-                aria-label="忽略提示"
+                aria-label={tr("忽略提示", "Dismiss message")}
               >
                 <X size={15} />
               </button>
@@ -230,7 +249,9 @@ export function PersonalDeskApp() {
         {!showComposer && (
           <div className="page-save-state">
             <CloudOff size={13} />
-            数据保存在此浏览器 · {tasks.lastSavedAt ? "已自动保存" : "正在保存"}
+            {tr("数据保存在此浏览器", "Data stored in this browser")} · {tasks.lastSavedAt
+              ? tr("已自动保存", "Autosaved")
+              : tr("正在保存", "Saving")}
           </div>
         )}
       </main>
@@ -275,5 +296,6 @@ export function PersonalDeskApp() {
         avoidComposer={showComposer}
       />
     </div>
+    </LanguageProvider>
   );
 }

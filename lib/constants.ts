@@ -14,6 +14,7 @@ export const STORAGE_KEYS = {
 export const DEFAULT_SETTINGS: DeskSettings = {
   dashboardTitle: DEFAULT_DASHBOARD_TITLE,
   interfaceTheme: "blueBlack",
+  language: "zh-CN",
   sidebarCollapsed: false,
   browserNotifications: false,
   reminderMode: "morningEvening",

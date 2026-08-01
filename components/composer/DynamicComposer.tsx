@@ -11,10 +11,9 @@ import {
   Plus,
   Video,
 } from "lucide-react";
-import {
-  MODULE_META,
-  PERSONAL_URGENCY_LABELS,
-} from "@/lib/constants";
+import { PERSONAL_URGENCY_LABELS } from "@/lib/constants";
+import { useLanguage } from "@/context/LanguageContext";
+import { moduleMeta, stageLabel, urgencyLabel } from "@/lib/i18n";
 import {
   createWorkProcessStages,
   createWorkflowStages,
@@ -69,15 +68,16 @@ function WorkflowDates({
   stages: WorkflowStage[];
   onChange: (stages: WorkflowStage[]) => void;
 }) {
+  const { language, tr } = useLanguage();
   return (
     <div className="workflow-date-grid">
       {stages.map((stage, index) => (
         <label key={stage.id} className="date-field">
           <span>
-            {stage.name}
+            {stageLabel(stage.name, language)}
             {index > 0 && (
               <small data-source={stage.dateSource}>
-                {stage.dateSource === "automatic" ? "自动" : "已调整"}
+                {stage.dateSource === "automatic" ? tr("自动", "Auto") : tr("已调整", "Adjusted")}
               </small>
             )}
           </span>
@@ -108,6 +108,7 @@ export function DynamicComposer({
   onCreate,
   onCollapsedChange,
 }: DynamicComposerProps) {
+  const { language, tr } = useLanguage();
   const [workTitle, setWorkTitle] = useState("");
   const [workType, setWorkType] = useState<"process" | "event">("event");
   const [workUrgency, setWorkUrgency] =
@@ -125,7 +126,7 @@ export function DynamicComposer({
     createWorkflowStages("advertising", todayKey())
   );
   const Icon = icons[module];
-  const meta = MODULE_META[module];
+  const meta = moduleMeta(module, language);
 
   const title = module === "work"
     ? workTitle
@@ -206,13 +207,13 @@ export function DynamicComposer({
       placeholder={
         module === "work"
           ? workType === "process"
-            ? "输入工作流程名称……"
-            : "输入工作事件……"
+            ? tr("输入工作流程名称……", "Enter a work process…")
+            : tr("输入工作事件……", "Enter a work task…")
           : module === "social"
-            ? "输入内容名称……"
+            ? tr("输入内容名称……", "Enter a content title…")
             : module === "advertising"
-              ? "输入广告项目内容……"
-              : "输入生活事项……"
+              ? tr("输入广告项目内容……", "Enter an ad project…")
+              : tr("输入生活事项……", "Enter a personal task…")
       }
       onChange={(event) => {
         const value = event.target.value;
@@ -227,7 +228,7 @@ export function DynamicComposer({
           submit();
         }
       }}
-      aria-label="事项内容"
+      aria-label={tr("事项内容", "Task details")}
     />
   );
 
@@ -255,12 +256,12 @@ export function DynamicComposer({
                 onChange={(event) =>
                   onModuleChange(event.target.value as ModuleType)
                 }
-                aria-label="选择事项模块"
+                aria-label={tr("选择事项模块", "Choose task module")}
               >
-                <option value="work">工作项目</option>
-                <option value="social">自媒体日常</option>
-                <option value="advertising">广告项目</option>
-                <option value="personal">个人生活</option>
+                <option value="work">{moduleMeta("work", language).label}</option>
+                <option value="social">{moduleMeta("social", language).label}</option>
+                <option value="advertising">{moduleMeta("advertising", language).label}</option>
+                <option value="personal">{moduleMeta("personal", language).label}</option>
               </select>
               <ChevronDown size={14} />
             </label>
@@ -268,19 +269,19 @@ export function DynamicComposer({
               <div
                 className="work-type-toggle"
                 role="group"
-                aria-label="工作项目类型"
+                aria-label={tr("工作项目类型", "Work project type")}
               >
                 <button
                   data-active={workType === "process"}
                   onClick={() => setWorkType("process")}
                 >
-                  流程
+                  {tr("流程", "Process")}
                 </button>
                 <button
                   data-active={workType === "event"}
                   onClick={() => setWorkType("event")}
                 >
-                  事件
+                  {tr("事件", "Task")}
                 </button>
               </div>
             )}
@@ -288,8 +289,8 @@ export function DynamicComposer({
           <button
             className="composer-collapse-button"
             onClick={() => onCollapsedChange(true)}
-            aria-label="收起输入框"
-            title="收起输入框"
+            aria-label={tr("收起输入框", "Collapse composer")}
+            title={tr("收起输入框", "Collapse composer")}
           >
             <ChevronDown size={17} />
           </button>
@@ -299,7 +300,7 @@ export function DynamicComposer({
 
         {module === "work" && workType === "event" && (
           <div className="composer-options">
-            <span className="option-label">紧急程度</span>
+            <span className="option-label">{tr("紧急程度", "Urgency")}</span>
             <div className="segmented-control">
               {(Object.keys(
                 PERSONAL_URGENCY_LABELS,
@@ -310,7 +311,7 @@ export function DynamicComposer({
                     data-active={workUrgency === urgency}
                     onClick={() => setWorkUrgency(urgency)}
                   >
-                    {PERSONAL_URGENCY_LABELS[urgency]}
+                    {urgencyLabel(urgency, language)}
                   </button>
                 ),
               )}
@@ -321,7 +322,7 @@ export function DynamicComposer({
         {module === "work" && workType === "process" && (
           <div className="work-process-options">
             <label className="date-field work-process-due-date">
-              <span>Brief 截止日期</span>
+              <span>{tr("Brief 截止日期", "Brief Due Date")}</span>
               <input
                 type="date"
                 required
@@ -334,7 +335,7 @@ export function DynamicComposer({
 
         {module === "personal" && (
           <div className="composer-options">
-            <span className="option-label">紧急程度</span>
+            <span className="option-label">{tr("紧急程度", "Urgency")}</span>
             <div className="segmented-control">
               {(Object.keys(
                 PERSONAL_URGENCY_LABELS,
@@ -344,7 +345,7 @@ export function DynamicComposer({
                   data-active={personalUrgency === urgency}
                   onClick={() => setPersonalUrgency(urgency)}
                 >
-                  {PERSONAL_URGENCY_LABELS[urgency]}
+                  {urgencyLabel(urgency, language)}
                 </button>
               ))}
             </div>
@@ -368,10 +369,10 @@ export function DynamicComposer({
         )}
 
         <div className="composer-actions">
-          <span className="composer-shortcut">Enter 创建 · Shift + Enter 换行</span>
+          <span className="composer-shortcut">{tr("Enter 创建 · Shift + Enter 换行", "Enter to create · Shift + Enter for a new line")}</span>
           <div className="composer-primary-actions">
             <span className="composer-hint">
-              <CalendarDays size={13} /> 日期自动按本地时间保存
+              <CalendarDays size={13} /> {tr("日期自动按本地时间保存", "Dates are saved in local time")}
             </span>
             <button
               className="create-button"
@@ -383,7 +384,7 @@ export function DynamicComposer({
                   && !workProcessDueDate)
               }
             >
-              创建 <ArrowUp size={15} />
+              {tr("创建", "Create")} <ArrowUp size={15} />
             </button>
           </div>
         </div>
@@ -392,8 +393,8 @@ export function DynamicComposer({
         <button
           className="composer-collapsed-bar"
           onClick={() => onCollapsedChange(false)}
-          aria-label="展开输入框"
-          title="展开输入框"
+          aria-label={tr("展开输入框", "Expand composer")}
+          title={tr("展开输入框", "Expand composer")}
           aria-hidden={!collapsed}
           tabIndex={collapsed ? 0 : -1}
         >

@@ -10,12 +10,13 @@ import {
 import { isSameDay, parseISO } from "date-fns";
 import {
   DEFAULT_DASHBOARD_TITLE,
-  MODULE_META,
   MODULE_ORDER,
 } from "@/lib/constants";
 import { localDateLabel, todayKey } from "@/lib/dates/dateCalculations";
 import { sortTasks } from "@/lib/dates/sorting";
 import { TaskCard } from "@/components/tasks/TaskCard";
+import { useLanguage } from "@/context/LanguageContext";
+import { moduleMeta } from "@/lib/i18n";
 import type { ModuleType, TaskItem } from "@/types/tasks";
 
 const icons = {
@@ -42,7 +43,8 @@ function ModuleColumn({
   onAdd,
   expanded = false,
 }: ModuleColumnProps) {
-  const meta = MODULE_META[module];
+  const { language, tr } = useLanguage();
+  const meta = moduleMeta(module, language);
   const Icon = icons[module];
   const sorted = sortTasks(items);
   const visible = expanded ? sorted : sorted.slice(0, 8);
@@ -80,8 +82,8 @@ function ModuleColumn({
         )}
         {remaining > 0 && (
           <div className="remaining-items">
-            <span>还有 {remaining} 个事项</span>
-            <button onClick={() => onAdd(module)}>继续添加</button>
+            <span>{tr(`还有 ${remaining} 个事项`, `${remaining} more items`)}</span>
+            <button onClick={() => onAdd(module)}>{tr("继续添加", "Add More")}</button>
           </div>
         )}
       </div>
@@ -108,9 +110,19 @@ export function Dashboard({
   onAdd,
   onDashboardTitleChange,
 }: DashboardProps) {
+  const { language, tr } = useLanguage();
+  const localizedDefaultTitle = tr(DEFAULT_DASHBOARD_TITLE, "Hello Cecilia");
+  const displayedTitle = dashboardTitle === DEFAULT_DASHBOARD_TITLE
+    ? localizedDefaultTitle
+    : dashboardTitle;
   const saveDashboardTitle = (input: HTMLInputElement) => {
-    const nextTitle = input.value.trim() || DEFAULT_DASHBOARD_TITLE;
-    input.value = nextTitle;
+    const enteredTitle = input.value.trim();
+    const nextTitle = !enteredTitle || enteredTitle === localizedDefaultTitle
+      ? DEFAULT_DASHBOARD_TITLE
+      : enteredTitle;
+    input.value = nextTitle === DEFAULT_DASHBOARD_TITLE
+      ? localizedDefaultTitle
+      : nextTitle;
     if (nextTitle !== dashboardTitle) {
       onDashboardTitleChange(nextTitle);
     }
@@ -123,7 +135,7 @@ export function Dashboard({
     && item.completedAt
     && isSameDay(parseISO(item.completedAt), parseISO(todayKey()))
   ).length;
-  const scope = module ? MODULE_META[module].label : "今日";
+  const scope = module ? moduleMeta(module, language).label : tr("今日", "Today");
   const scopedItems = module
     ? activeItems.filter((item) => item.module === module)
     : activeItems;
@@ -136,14 +148,14 @@ export function Dashboard({
     <>
       <header className="dashboard-header">
         <div>
-          <span className="eyebrow">{module ? "模块视图" : "每日工作台"}</span>
+          <span className="eyebrow">{module ? tr("模块视图", "Module View") : tr("每日工作台", "Daily Workspace")}</span>
           {module ? (
             <h1>{scope}</h1>
           ) : (
             <input
-              key={dashboardTitle}
+              key={`${language}:${dashboardTitle}`}
               className="dashboard-title-input"
-              defaultValue={dashboardTitle}
+              defaultValue={displayedTitle}
               onBlur={(event) => saveDashboardTitle(event.currentTarget)}
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
@@ -151,15 +163,15 @@ export function Dashboard({
                   event.currentTarget.blur();
                 }
               }}
-              aria-label="编辑首页标题"
+              aria-label={tr("编辑首页标题", "Edit dashboard title")}
               maxLength={50}
             />
           )}
-          <p>{localDateLabel()}</p>
+          <p>{localDateLabel(new Date(), language)}</p>
         </div>
-        <div className="today-progress" aria-label="今日完成进度">
+        <div className="today-progress" aria-label={tr("今日完成进度", "Today's progress")}>
           <div>
-            <span>今日完成</span>
+            <span>{tr("今日完成", "Completed Today")}</span>
             <strong>{completedToday} <small>/ {progressTotal}</small></strong>
           </div>
           <span

@@ -155,6 +155,7 @@ const reminderTime = z.string().regex(
 export const settingsSchema = z.object({
   dashboardTitle: z.string().trim().min(1).max(50).default("你好 Cecilia"),
   interfaceTheme: z.enum(["blueBlack", "bright"]).default("blueBlack"),
+  language: z.enum(["zh-CN", "en"]).default("zh-CN"),
   sidebarCollapsed: z.boolean().default(false),
   browserNotifications: z.boolean().default(false),
   reminderMode: z.enum(["custom", "twoHourly", "morningEvening"])

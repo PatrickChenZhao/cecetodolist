@@ -14,23 +14,24 @@ import {
   Menu,
   Video,
 } from "lucide-react";
-import { APP_NAME, MODULE_META } from "@/lib/constants";
+import { APP_NAME } from "@/lib/constants";
+import { useLanguage } from "@/context/LanguageContext";
+import { moduleMeta } from "@/lib/i18n";
 import type { AppView } from "@/types/tasks";
 
 const navigation = [
-  { id: "today" as const, label: "今日", icon: CalendarDays },
-  { id: "deadlineCalendar" as const, label: "Deadline 日历", icon: CalendarRange },
-  { id: "work" as const, label: MODULE_META.work.label, icon: BriefcaseBusiness },
-  { id: "social" as const, label: MODULE_META.social.label, icon: Video },
+  { id: "today" as const, icon: CalendarDays },
+  { id: "deadlineCalendar" as const, icon: CalendarRange },
+  { id: "work" as const, icon: BriefcaseBusiness },
+  { id: "social" as const, icon: Video },
   {
     id: "advertising" as const,
-    label: MODULE_META.advertising.label,
     icon: Megaphone,
   },
-  { id: "personal" as const, label: MODULE_META.personal.label, icon: Leaf },
-  { id: "reminders" as const, label: "提醒设置", icon: Bell },
-  { id: "completed" as const, label: "已完成任务", icon: CheckCircle2 },
-  { id: "backup" as const, label: "数据备份", icon: DatabaseBackup },
+  { id: "personal" as const, icon: Leaf },
+  { id: "reminders" as const, icon: Bell },
+  { id: "completed" as const, icon: CheckCircle2 },
+  { id: "backup" as const, icon: DatabaseBackup },
 ];
 
 interface SidebarProps {
@@ -52,28 +53,38 @@ export function Sidebar({
   onMobileClose,
   onMobileOpen,
 }: SidebarProps) {
+  const { language, tr } = useLanguage();
+  const navigationLabel = (id: AppView) => {
+    if (id === "today") return tr("今日", "Today");
+    if (id === "deadlineCalendar") return tr("Deadline 日历", "Deadline Calendar");
+    if (id === "reminders") return tr("提醒设置", "Message Settings");
+    if (id === "completed") return tr("已完成任务", "Completed Tasks");
+    if (id === "backup") return tr("数据备份", "Data Backup");
+    return moduleMeta(id, language).label;
+  };
   const renderContent = (compact: boolean) => (
     <>
       <div className="sidebar-brand">
         {!compact && (
           <span className="brand-copy">
             <strong>{APP_NAME}</strong>
-            <small>个人工作台</small>
+            <small>{tr("个人工作台", "Personal Workspace")}</small>
           </span>
         )}
         <button
           className="icon-button sidebar-collapse desktop-only"
           onClick={onToggle}
-          aria-label={compact ? "展开导航栏" : "收起导航栏"}
-          title={compact ? "展开导航栏" : "收起导航栏"}
+          aria-label={compact ? tr("展开导航栏", "Expand sidebar") : tr("收起导航栏", "Collapse sidebar")}
+          title={compact ? tr("展开导航栏", "Expand sidebar") : tr("收起导航栏", "Collapse sidebar")}
         >
           {compact ? <ChevronRight size={17} /> : <ChevronLeft size={17} />}
         </button>
       </div>
 
-      <nav className="sidebar-nav" aria-label="主要导航">
+      <nav className="sidebar-nav" aria-label={tr("主要导航", "Main navigation")}>
         {navigation.map((item, index) => {
           const Icon = item.icon;
+          const label = navigationLabel(item.id);
           const separator = index === 2 || index === 6;
           return (
             <div key={item.id} className={separator ? "nav-group-start" : ""}>
@@ -85,10 +96,10 @@ export function Sidebar({
                   onMobileClose();
                 }}
                 aria-current={view === item.id ? "page" : undefined}
-                title={compact ? item.label : undefined}
+                title={compact ? label : undefined}
               >
                 <Icon size={18} strokeWidth={1.9} />
-                {!compact && <span>{item.label}</span>}
+                {!compact && <span>{label}</span>}
               </button>
             </div>
           );
@@ -98,7 +109,7 @@ export function Sidebar({
       {!compact && (
         <div className="sidebar-foot">
           <span className="save-dot" />
-          数据仅保存在此浏览器
+          {tr("数据仅保存在此浏览器", "Data is stored only in this browser")}
         </div>
       )}
     </>
@@ -109,7 +120,7 @@ export function Sidebar({
       <button
         className="mobile-menu-button mobile-only"
         onClick={onMobileOpen}
-        aria-label="打开导航菜单"
+        aria-label={tr("打开导航菜单", "Open navigation menu")}
       >
         <Menu size={20} />
       </button>
@@ -124,7 +135,7 @@ export function Sidebar({
         <button
           className="mobile-backdrop"
           onClick={onMobileClose}
-          aria-label="关闭导航菜单"
+          aria-label={tr("关闭导航菜单", "Close navigation menu")}
           tabIndex={mobileOpen ? 0 : -1}
         />
         <aside className="sidebar mobile-sidebar">{renderContent(false)}</aside>

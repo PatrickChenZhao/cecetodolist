@@ -4,6 +4,7 @@ export type StageStatus = "waiting" | "active" | "overdue" | "completed";
 export type DateSource = "automatic" | "manual";
 export type EventUrgency = "urgent" | "week" | "month" | "notUrgent";
 export type InterfaceTheme = "blueBlack" | "bright";
+export type InterfaceLanguage = "zh-CN" | "en";
 export type ReminderMode = "custom" | "twoHourly" | "morningEvening";
 
 export interface BaseItem {
@@ -67,6 +68,7 @@ export type TaskItem = WorkItem | WorkProcessItem | PersonalItem | WorkflowItem;
 export interface DeskSettings {
   dashboardTitle: string;
   interfaceTheme: InterfaceTheme;
+  language: InterfaceLanguage;
   sidebarCollapsed: boolean;
   browserNotifications: boolean;
   reminderMode: ReminderMode;

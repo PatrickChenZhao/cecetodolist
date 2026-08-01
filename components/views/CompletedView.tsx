@@ -8,9 +8,11 @@ import {
   X,
 } from "lucide-react";
 import { isAfter, isSameDay, parseISO, startOfWeek, subDays } from "date-fns";
-import { MODULE_META, MODULE_ORDER } from "@/lib/constants";
+import { MODULE_ORDER } from "@/lib/constants";
 import { displayCompletedAt } from "@/lib/dates/dateCalculations";
 import type { ModuleType, TaskItem } from "@/types/tasks";
+import { useLanguage } from "@/context/LanguageContext";
+import { moduleMeta, stageLabel } from "@/lib/i18n";
 
 type Filter = "all" | ModuleType;
 
@@ -34,6 +36,7 @@ export function CompletedView({
   onRestore: (item: TaskItem) => void;
   onDelete: (item: TaskItem) => void;
 }) {
+  const { language, tr } = useLanguage();
   const [filter, setFilter] = useState<Filter>("all");
   const completed = items
     .filter((item) =>
@@ -53,20 +56,20 @@ export function CompletedView({
     <section className="page-view">
       <header className="view-header">
         <div>
-          <span className="eyebrow">完成记录</span>
-          <h1>已完成任务</h1>
-          <p>所有完成事项统一归档，按实际完成时间排序。</p>
+          <span className="eyebrow">{tr("完成记录", "Completion History")}</span>
+          <h1>{tr("已完成任务", "Completed Tasks")}</h1>
+          <p>{tr("所有完成事项统一归档，按实际完成时间排序。", "Completed items are archived and sorted by their actual completion time.")}</p>
         </div>
         <div className="completed-total">
           <CheckCircle2 size={18} />
           <strong>{completed.length}</strong>
-          <span>条记录</span>
+          <span>{tr("条记录", "records")}</span>
         </div>
       </header>
 
-      <div className="filter-row" role="tablist" aria-label="按模块筛选">
+      <div className="filter-row" role="tablist" aria-label={tr("按模块筛选", "Filter by module")}>
         <button data-active={filter === "all"} onClick={() => setFilter("all")}>
-          全部
+          {tr("全部", "All")}
         </button>
         {MODULE_ORDER.map((module) => (
           <button
@@ -74,7 +77,7 @@ export function CompletedView({
             data-active={filter === module}
             onClick={() => setFilter(module)}
           >
-            {MODULE_META[module].label}
+            {moduleMeta(module, language).label}
           </button>
         ))}
       </div>
@@ -82,17 +85,22 @@ export function CompletedView({
       {completed.length === 0 ? (
         <div className="large-empty-state">
           <span><CheckCircle2 size={24} /></span>
-          <h2>还没有完成记录</h2>
-          <p>完成任务后，它们会按时间整理在这里。</p>
+          <h2>{tr("还没有完成记录", "No Completed Tasks Yet")}</h2>
+          <p>{tr("完成任务后，它们会按时间整理在这里。", "Completed tasks will be organized here by time.")}</p>
         </div>
       ) : (
         <div className="completed-groups">
           {groups.filter((group) => group.items.length > 0).map((group) => (
             <section key={group.name}>
-              <h2>{group.name}<span>{group.items.length}</span></h2>
+              <h2>{({
+                "今天": tr("今天", "Today"),
+                "昨天": tr("昨天", "Yesterday"),
+                "本周": tr("本周", "This Week"),
+                "更早": tr("更早", "Earlier"),
+              })[group.name]}<span>{group.items.length}</span></h2>
               <div className="completed-list">
                 {group.items.map((item) => {
-                  const meta = MODULE_META[item.module];
+                  const meta = moduleMeta(item.module, language);
                   const finalStage = "stages" in item
                     ? item.stages[item.stages.length - 1]?.name
                     : null;
@@ -116,10 +124,12 @@ export function CompletedView({
                         <h3>{item.title}</h3>
                         <p>
                           <span style={{ color: meta.color }}>{meta.label}</span>
-                          {finalStage ? ` · ${finalStage}完成于 ` : " · 完成于 "}
+                          {finalStage
+                            ? tr(` · ${finalStage}完成于 `, ` · ${stageLabel(finalStage, language)} completed `)
+                            : tr(" · 完成于 ", " · Completed ")}
                           {item.completedAt
-                            ? displayCompletedAt(item.completedAt)
-                            : "未知时间"}
+                            ? displayCompletedAt(item.completedAt, new Date(), language)
+                            : tr("未知时间", "Unknown time")}
                         </p>
                       </div>
                       <ChevronRight size={16} className="completed-chevron" />
@@ -129,8 +139,8 @@ export function CompletedView({
                           event.stopPropagation();
                           onRestore(item);
                         }}
-                        aria-label={`撤销完成${item.title}`}
-                        title="撤销完成"
+                        aria-label={tr(`撤销完成${item.title}`, `Restore ${item.title}`)}
+                        title={tr("撤销完成", "Restore task")}
                       >
                         <RotateCcw size={15} />
                       </button>
@@ -140,8 +150,8 @@ export function CompletedView({
                           event.stopPropagation();
                           onDelete(item);
                         }}
-                        aria-label={`删除${item.title}`}
-                        title="删除已完成事项"
+                        aria-label={tr(`删除${item.title}`, `Delete ${item.title}`)}
+                        title={tr("删除已完成事项", "Delete completed item")}
                       >
                         <X size={15} />
                       </button>

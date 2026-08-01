@@ -10,7 +10,6 @@ import {
   X,
 } from "lucide-react";
 import {
-  MODULE_META,
   PERSONAL_URGENCY_LABELS,
 } from "@/lib/constants";
 import {
@@ -30,6 +29,8 @@ import type {
   WorkProcessStage,
   WorkflowStage,
 } from "@/types/tasks";
+import { useLanguage } from "@/context/LanguageContext";
+import { moduleMeta, stageLabel, urgencyLabel } from "@/lib/i18n";
 
 interface TaskDetailPanelProps {
   item: TaskItem;
@@ -46,6 +47,7 @@ export function TaskDetailPanel({
   onComplete,
   onDelete,
 }: TaskDetailPanelProps) {
+  const { language, tr } = useLanguage();
   const workEvent = item.module === "work" && item.workType === "event"
     ? item
     : null;
@@ -82,7 +84,7 @@ export function TaskDetailPanel({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [item, onClose]);
 
-  const meta = MODULE_META[item.module];
+  const meta = moduleMeta(item.module, language);
   const currentStage = workflow ? getCurrentStage(workflow) : null;
   const completedCount = workflow
     ? workflow.stages.filter((stage) => stage.status === "completed").length
@@ -153,7 +155,7 @@ export function TaskDetailPanel({
       <button
         className="detail-backdrop"
         onClick={onClose}
-        aria-label="关闭任务详情"
+        aria-label={tr("关闭任务详情", "Close task details")}
       />
       <aside
         className="detail-panel"
@@ -165,12 +167,12 @@ export function TaskDetailPanel({
               <i style={{ background: meta.color }} />
               {meta.label}
             </span>
-            <h2>任务详情</h2>
+            <h2>{tr("任务详情", "Task Details")}</h2>
           </div>
           <button
             className="icon-button"
             onClick={onClose}
-            aria-label="关闭详情"
+            aria-label={tr("关闭详情", "Close details")}
           >
             <X size={19} />
           </button>
@@ -178,7 +180,7 @@ export function TaskDetailPanel({
 
         <div className="detail-content">
           <label className="detail-field">
-            <span>标题</span>
+            <span>{tr("标题", "Title")}</span>
             <textarea
               value={title}
               onChange={(event) => setTitle(event.target.value)}
@@ -189,7 +191,7 @@ export function TaskDetailPanel({
           {eventItem && (
             <>
               <div className="detail-field">
-                <span>紧急程度</span>
+                <span>{tr("紧急程度", "Urgency")}</span>
                 <div className="segmented-control wrap">
                   {(Object.keys(PERSONAL_URGENCY_LABELS) as EventUrgency[])
                     .map((urgency) => (
@@ -201,13 +203,13 @@ export function TaskDetailPanel({
                           setDueDate(dueDateForPersonal(urgency));
                         }}
                       >
-                        {PERSONAL_URGENCY_LABELS[urgency]}
+                        {urgencyLabel(urgency, language)}
                       </button>
                     ))}
                 </div>
               </div>
               <label className="detail-field">
-                <span>截止日期</span>
+                <span>{tr("截止日期", "Due Date")}</span>
                 <input
                   type="date"
                   disabled={eventUrgency === "notUrgent"}
@@ -220,7 +222,7 @@ export function TaskDetailPanel({
 
           {workProcess && (
             <label className="detail-field">
-              <span>当前阶段截止日期</span>
+              <span>{tr("当前阶段截止日期", "Current Stage Due Date")}</span>
               <input
                 type="date"
                 value={dueDate ?? ""}
@@ -233,7 +235,7 @@ export function TaskDetailPanel({
             <section className="detail-stages">
               <header>
                 <div>
-                  <span>整体进度</span>
+                  <span>{tr("整体进度", "Overall Progress")}</span>
                   <strong>{completedCount} / {workflow.stages.length}</strong>
                 </div>
                 <div className="detail-progress-track">
@@ -261,12 +263,12 @@ export function TaskDetailPanel({
                     </span>
                     <div className="detail-stage-body">
                       <div>
-                        <strong>{stage.name}</strong>
-                        {isCurrent && <small>当前阶段</small>}
+                        <strong>{stageLabel(stage.name, language)}</strong>
+                        {isCurrent && <small>{tr("当前阶段", "Current Stage")}</small>}
                       </div>
                       {workflow.module !== "work" && "dateSource" in stage && (
                         <label>
-                          截止
+                          {tr("截止", "Due")}
                           <input
                             type="date"
                             value={stage.dueDate}
@@ -284,7 +286,7 @@ export function TaskDetailPanel({
                           />
                           {stage.status !== "completed" && index > 0 && (
                             <span>
-                              {stage.dateSource === "automatic" ? "自动" : "已调整"}
+                              {stage.dateSource === "automatic" ? tr("自动", "Auto") : tr("已调整", "Adjusted")}
                             </span>
                           )}
                         </label>
@@ -292,7 +294,7 @@ export function TaskDetailPanel({
                       {stage.completedAt && (
                         <p>
                           <CheckCircle2 size={12} />
-                          完成于 {displayCompletedAt(stage.completedAt)}
+                          {tr("完成于", "Completed")} {displayCompletedAt(stage.completedAt, new Date(), language)}
                         </p>
                       )}
                     </div>
@@ -300,10 +302,10 @@ export function TaskDetailPanel({
                       className="detail-stage-rewind"
                       type="button"
                       onClick={() => returnStageToIncomplete(stage.id)}
-                      aria-label={`${stage.name}回到未完成状态`}
+                      aria-label={tr(`${stage.name}回到未完成状态`, `Return ${stageLabel(stage.name, language)} to incomplete`)}
                     >
                       <RotateCcw size={11} />
-                      回到未完成状态
+                      {tr("回到未完成状态", "Mark Incomplete")}
                     </button>
                   </div>
                 );
@@ -312,11 +314,11 @@ export function TaskDetailPanel({
           )}
 
           <div className="detail-audit">
-            <span><Clock3 size={13} /> 创建于 {displayCompletedAt(item.createdAt)}</span>
+            <span><Clock3 size={13} /> {tr("创建于", "Created")} {displayCompletedAt(item.createdAt, new Date(), language)}</span>
             {item.completedAt && (
               <span>
                 <CheckCircle2 size={13} />
-                完成于 {displayCompletedAt(item.completedAt)}
+                {tr("完成于", "Completed")} {displayCompletedAt(item.completedAt, new Date(), language)}
               </span>
             )}
           </div>
@@ -329,13 +331,13 @@ export function TaskDetailPanel({
               onDelete(item);
               onClose();
             }}
-            title="删除事项"
+            title={tr("删除事项", "Delete item")}
           >
-            <Trash2 size={15} /> 删除
+            <Trash2 size={15} /> {tr("删除", "Delete")}
           </button>
           <div>
             <button className="secondary-button" onClick={save}>
-              保存修改
+              {tr("保存修改", "Save Changes")}
             </button>
             {item.status === "active" && (
               <button
@@ -347,7 +349,7 @@ export function TaskDetailPanel({
                 }}
               >
                 <Check size={15} />
-                {currentStage ? "完成当前阶段" : "完成"}
+                {currentStage ? tr("完成当前阶段", "Complete Stage") : tr("完成", "Complete")}
               </button>
             )}
           </div>
