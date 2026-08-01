@@ -5,27 +5,30 @@ import {
   Check,
   CheckCircle2,
   Clock3,
+  RotateCcw,
   Trash2,
   X,
 } from "lucide-react";
 import {
   MODULE_META,
   PERSONAL_URGENCY_LABELS,
-  WORK_URGENCY_LABELS,
 } from "@/lib/constants";
 import {
   displayCompletedAt,
   dueDateForPersonal,
-  dueDateForWork,
   effectiveStageStatus,
   getCurrentStage,
+  isWorkflowTask,
   recalculateWorkflowDates,
+  rewindWorkflowToStage,
+  todayKey,
 } from "@/lib/dates/dateCalculations";
 import type {
-  PersonalItem,
+  AnyWorkflowStage,
+  EventUrgency,
   TaskItem,
+  WorkProcessStage,
   WorkflowStage,
-  WorkItem,
 } from "@/types/tasks";
 
 interface TaskDetailPanelProps {
@@ -43,21 +46,31 @@ export function TaskDetailPanel({
   onComplete,
   onDelete,
 }: TaskDetailPanelProps) {
+  const workEvent = item.module === "work" && item.workType === "event"
+    ? item
+    : null;
+  const workProcess = item.module === "work" && item.workType === "process"
+    ? item
+    : null;
+  const eventItem = item.module === "personal" ? item : workEvent;
+  const workflow = isWorkflowTask(item) ? item : null;
+  const initialWorkProcessStage = workProcess
+    ? getCurrentStage(workProcess)
+    : null;
   const [title, setTitle] = useState(item.title);
-  const [workUrgency, setWorkUrgency] =
-    useState<WorkItem["urgency"]>(
-      item.module === "work" ? item.urgency : "today",
-    );
-  const [personalUrgency, setPersonalUrgency] =
-    useState<PersonalItem["urgency"]>(
-      item.module === "personal" ? item.urgency : "week",
-    );
-  const [dueDate, setDueDate] = useState<string | null>(
-    "dueDate" in item ? item.dueDate : null,
+  const [eventUrgency, setEventUrgency] = useState<EventUrgency>(
+    eventItem?.urgency ?? "week",
   );
-  const [stages, setStages] = useState<WorkflowStage[]>(
-    item.module === "social" || item.module === "advertising"
-      ? item.stages.map((stage) => ({ ...stage }))
+  const [dueDate, setDueDate] = useState<string | null>(
+    workProcess
+      ? initialWorkProcessStage?.dueDate ?? null
+      : "dueDate" in item
+        ? item.dueDate
+        : null,
+  );
+  const [stages, setStages] = useState<AnyWorkflowStage[]>(
+    workflow
+      ? workflow.stages.map((stage) => ({ ...stage }))
       : [],
   );
 
@@ -70,9 +83,6 @@ export function TaskDetailPanel({
   }, [item, onClose]);
 
   const meta = MODULE_META[item.module];
-  const workflow = item.module === "social" || item.module === "advertising"
-    ? item
-    : null;
   const currentStage = workflow ? getCurrentStage(workflow) : null;
   const completedCount = workflow
     ? workflow.stages.filter((stage) => stage.status === "completed").length
@@ -80,23 +90,62 @@ export function TaskDetailPanel({
 
   function save() {
     if (!title.trim()) return;
-    if (item.module === "work") {
+    if (workEvent) {
       onSave({
-        ...item,
+        ...workEvent,
         title: title.trim(),
-        urgency: workUrgency,
-        dueDate: dueDate ?? dueDateForWork(workUrgency),
+        urgency: eventUrgency,
+        dueDate,
+      });
+    } else if (workProcess) {
+      const nextStages = stages.map((stage) =>
+        stage.id === workProcess.currentStageId
+          ? { ...stage, dueDate }
+          : stage
+      ) as WorkProcessStage[];
+      onSave({
+        ...workProcess,
+        title: title.trim(),
+        dueDate: dueDate ?? todayKey(),
+        stages: nextStages,
       });
     } else if (item.module === "personal") {
       onSave({
         ...item,
         title: title.trim(),
-        urgency: personalUrgency,
+        urgency: eventUrgency,
         dueDate,
       });
-    } else {
-      onSave({ ...item, title: title.trim(), stages });
+    } else if (workflow) {
+      onSave({
+        ...workflow,
+        title: title.trim(),
+        stages: stages as WorkflowStage[],
+      });
     }
+  }
+
+  function returnStageToIncomplete(stageId: string) {
+    if (!workflow) return;
+
+    const draft = workProcess
+      ? {
+          ...workProcess,
+          title: title.trim() || workProcess.title,
+          dueDate: dueDate ?? todayKey(),
+          stages: stages as WorkProcessStage[],
+        }
+      : {
+          ...workflow,
+          title: title.trim() || workflow.title,
+          stages: stages as WorkflowStage[],
+        };
+    const rewound = rewindWorkflowToStage(draft, stageId);
+    setStages(rewound.stages.map((stage) => ({ ...stage })));
+    if (rewound.module === "work") {
+      setDueDate(getCurrentStage(rewound)?.dueDate ?? null);
+    }
+    onSave(rewound);
   }
 
   return (
@@ -137,22 +186,22 @@ export function TaskDetailPanel({
             />
           </label>
 
-          {item.module === "work" && (
+          {eventItem && (
             <>
               <div className="detail-field">
                 <span>紧急程度</span>
-                <div className="segmented-control">
-                  {(Object.keys(WORK_URGENCY_LABELS) as WorkItem["urgency"][])
+                <div className="segmented-control wrap">
+                  {(Object.keys(PERSONAL_URGENCY_LABELS) as EventUrgency[])
                     .map((urgency) => (
                       <button
                         key={urgency}
-                        data-active={workUrgency === urgency}
+                        data-active={eventUrgency === urgency}
                         onClick={() => {
-                          setWorkUrgency(urgency);
-                          setDueDate(dueDateForWork(urgency));
+                          setEventUrgency(urgency);
+                          setDueDate(dueDateForPersonal(urgency));
                         }}
                       >
-                        {WORK_URGENCY_LABELS[urgency]}
+                        {PERSONAL_URGENCY_LABELS[urgency]}
                       </button>
                     ))}
                 </div>
@@ -161,6 +210,7 @@ export function TaskDetailPanel({
                 <span>截止日期</span>
                 <input
                   type="date"
+                  disabled={eventUrgency === "notUrgent"}
                   value={dueDate ?? ""}
                   onChange={(event) => setDueDate(event.target.value)}
                 />
@@ -168,37 +218,15 @@ export function TaskDetailPanel({
             </>
           )}
 
-          {item.module === "personal" && (
-            <>
-              <div className="detail-field">
-                <span>紧急程度</span>
-                <div className="segmented-control wrap">
-                  {(Object.keys(
-                    PERSONAL_URGENCY_LABELS,
-                  ) as PersonalItem["urgency"][]).map((urgency) => (
-                    <button
-                      key={urgency}
-                      data-active={personalUrgency === urgency}
-                      onClick={() => {
-                        setPersonalUrgency(urgency);
-                        setDueDate(dueDateForPersonal(urgency));
-                      }}
-                    >
-                      {PERSONAL_URGENCY_LABELS[urgency]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <label className="detail-field">
-                <span>截止日期</span>
-                <input
-                  type="date"
-                  disabled={personalUrgency === "notUrgent"}
-                  value={dueDate ?? ""}
-                  onChange={(event) => setDueDate(event.target.value)}
-                />
-              </label>
-            </>
+          {workProcess && (
+            <label className="detail-field">
+              <span>当前阶段截止日期</span>
+              <input
+                type="date"
+                value={dueDate ?? ""}
+                onChange={(event) => setDueDate(event.target.value)}
+              />
+            </label>
           )}
 
           {workflow && (
@@ -236,29 +264,31 @@ export function TaskDetailPanel({
                         <strong>{stage.name}</strong>
                         {isCurrent && <small>当前阶段</small>}
                       </div>
-                      <label>
-                        截止
-                        <input
-                          type="date"
-                          value={stage.dueDate}
-                          disabled={stage.status === "completed"}
-                          onChange={(event) =>
-                            setStages(
-                              recalculateWorkflowDates(
-                                workflow.module,
-                                stages,
-                                index,
-                                event.target.value,
-                              ),
-                            )
-                          }
-                        />
-                        {stage.status !== "completed" && index > 0 && (
-                          <span>
-                            {stage.dateSource === "automatic" ? "自动" : "已调整"}
-                          </span>
-                        )}
-                      </label>
+                      {workflow.module !== "work" && "dateSource" in stage && (
+                        <label>
+                          截止
+                          <input
+                            type="date"
+                            value={stage.dueDate}
+                            disabled={stage.status === "completed"}
+                            onChange={(event) =>
+                              setStages(
+                                recalculateWorkflowDates(
+                                  workflow.module,
+                                  stages as WorkflowStage[],
+                                  index,
+                                  event.target.value,
+                                ),
+                              )
+                            }
+                          />
+                          {stage.status !== "completed" && index > 0 && (
+                            <span>
+                              {stage.dateSource === "automatic" ? "自动" : "已调整"}
+                            </span>
+                          )}
+                        </label>
+                      )}
                       {stage.completedAt && (
                         <p>
                           <CheckCircle2 size={12} />
@@ -266,6 +296,15 @@ export function TaskDetailPanel({
                         </p>
                       )}
                     </div>
+                    <button
+                      className="detail-stage-rewind"
+                      type="button"
+                      onClick={() => returnStageToIncomplete(stage.id)}
+                      aria-label={`${stage.name}回到未完成状态`}
+                    >
+                      <RotateCcw size={11} />
+                      回到未完成状态
+                    </button>
                   </div>
                 );
               })}

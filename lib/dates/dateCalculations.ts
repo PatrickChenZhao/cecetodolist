@@ -3,7 +3,6 @@ import {
   endOfMonth,
   endOfWeek,
   format,
-  isAfter,
   isBefore,
   isSameDay,
   parseISO,
@@ -13,13 +12,16 @@ import { zhCN } from "date-fns/locale";
 import {
   AD_STAGE_NAMES,
   SOCIAL_STAGE_NAMES,
+  WORK_PROCESS_STAGE_NAMES,
 } from "@/lib/constants";
 import type {
+  AnyWorkflowItem,
+  AnyWorkflowStage,
   PersonalItem,
   TaskItem,
+  WorkProcessStage,
   WorkflowItem,
   WorkflowStage,
-  WorkItem,
 } from "@/types/tasks";
 
 const SOCIAL_OFFSETS = [7, 5, 3];
@@ -34,7 +36,7 @@ export function localDateLabel(now = new Date()) {
 }
 
 export function dueDateForWork(
-  urgency: WorkItem["urgency"],
+  urgency: "today" | "week" | "month",
   now = new Date(),
 ) {
   if (urgency === "today") return todayKey(now);
@@ -42,6 +44,18 @@ export function dueDateForWork(
     return format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd");
   }
   return format(endOfMonth(now), "yyyy-MM-dd");
+}
+
+export function createWorkProcessStages(
+  briefDueDate: string | null = null,
+): WorkProcessStage[] {
+  return WORK_PROCESS_STAGE_NAMES.map((name, index) => ({
+    id: crypto.randomUUID(),
+    name,
+    dueDate: index === 0 ? briefDueDate : null,
+    status: index === 0 ? "active" : "waiting",
+    completedAt: null,
+  }));
 }
 
 export function dueDateForPersonal(
@@ -106,7 +120,11 @@ export function recalculateWorkflowDates(
   return next;
 }
 
-export function getCurrentStage(item: WorkflowItem) {
+export function isWorkflowTask(item: TaskItem): item is AnyWorkflowItem {
+  return "stages" in item;
+}
+
+export function getCurrentStage(item: AnyWorkflowItem) {
   return item.stages.find((stage) => stage.id === item.currentStageId)
     ?? item.stages.find((stage) => stage.status === "active")
     ?? item.stages[0];
@@ -114,6 +132,13 @@ export function getCurrentStage(item: WorkflowItem) {
 
 export function getItemDueDate(item: TaskItem) {
   if (item.module === "social" || item.module === "advertising") {
+    const currentStage = item.stages.find(
+      (stage) => stage.id === item.currentStageId,
+    ) ?? item.stages.find((stage) => stage.status === "active")
+      ?? item.stages[0];
+    return currentStage?.dueDate ?? null;
+  }
+  if (item.module === "work" && item.workType === "process") {
     return getCurrentStage(item)?.dueDate ?? null;
   }
   return "dueDate" in item ? item.dueDate : null;
@@ -143,6 +168,12 @@ export function displayDueDate(date: string | null, now = new Date()) {
   return format(parseISO(date), "M月d日");
 }
 
+export function displayTaskCardDueDate(date: string | null, now = new Date()) {
+  if (!date) return "无截止日期";
+  if (isSameDay(parseISO(date), now)) return "今天";
+  return `Due ${format(parseISO(date), "M/d")}`;
+}
+
 export function displayCompletedAt(value: string, now = new Date()) {
   const date = parseISO(value);
   if (isSameDay(date, now)) return `今天 ${format(date, "HH:mm")}`;
@@ -151,19 +182,24 @@ export function displayCompletedAt(value: string, now = new Date()) {
 }
 
 export function effectiveStageStatus(
-  stage: WorkflowStage,
+  stage: AnyWorkflowStage,
   now = new Date(),
 ) {
-  if (stage.status === "active" && isDateOverdue(stage.dueDate, now)) {
+  if (
+    stage.status === "active"
+    && "dueDate" in stage
+    && isDateOverdue(stage.dueDate, now)
+  ) {
     return "overdue" as const;
   }
   return stage.status;
 }
 
-export function advanceWorkflow(
-  item: WorkflowItem,
+export function advanceWorkflow<T extends AnyWorkflowItem>(
+  item: T,
   stageId: string,
   now = new Date(),
+  nextStageDueDate?: string,
 ) {
   const currentIndex = item.stages.findIndex(
     (stage) => stage.id === item.currentStageId,
@@ -177,30 +213,122 @@ export function advanceWorkflow(
   }
 
   const completedAt = now.toISOString();
+  const isFinal = currentIndex === item.stages.length - 1;
+  if (item.module === "work" && !isFinal && !nextStageDueDate) return item;
+
   const stages = item.stages.map((stage, index) => {
     if (index === currentIndex) {
       return { ...stage, status: "completed" as const, completedAt };
     }
     if (index === currentIndex + 1) {
-      return { ...stage, status: "active" as const };
+      return {
+        ...stage,
+        status: "active" as const,
+        ...(item.module === "work" ? { dueDate: nextStageDueDate! } : {}),
+      };
     }
     return { ...stage };
   });
-  const isFinal = currentIndex === stages.length - 1;
 
   return {
     ...item,
+    ...(item.module === "work" && !isFinal
+      ? { dueDate: nextStageDueDate! }
+      : {}),
     stages,
     currentStageId: isFinal ? item.currentStageId : stages[currentIndex + 1].id,
     status: isFinal ? "completed" as const : item.status,
     completedAt: isFinal ? completedAt : item.completedAt,
     updatedAt: completedAt,
-  };
+  } as T;
 }
 
-export function isDueForAttention(item: TaskItem, now = new Date()) {
+export function rewindWorkflowToStage<T extends AnyWorkflowItem>(
+  item: T,
+  stageId: string,
+  now = new Date(),
+) {
+  const targetIndex = item.stages.findIndex((stage) => stage.id === stageId);
+  if (targetIndex < 0) return item;
+
+  const updatedAt = now.toISOString();
+  const stages = item.stages.map((stage, index) => {
+    if (index < targetIndex) {
+      return {
+        ...stage,
+        status: "completed" as const,
+        completedAt: stage.completedAt ?? updatedAt,
+      };
+    }
+    if (index === targetIndex) {
+      return { ...stage, status: "active" as const, completedAt: null };
+    }
+    return { ...stage, status: "waiting" as const, completedAt: null };
+  });
+
+  return {
+    ...item,
+    ...(item.module === "work"
+      ? { dueDate: item.stages[targetIndex].dueDate ?? item.dueDate }
+      : {}),
+    status: "active" as const,
+    completedAt: null,
+    currentStageId: stageId,
+    stages,
+    updatedAt,
+  } as T;
+}
+
+export function reopenCompletedTask<T extends TaskItem>(
+  item: T,
+  now = new Date(),
+) {
+  if (item.status !== "completed") return item;
+  const updatedAt = now.toISOString();
+
+  if (!isWorkflowTask(item)) {
+    return {
+      ...item,
+      status: "active" as const,
+      completedAt: null,
+      updatedAt,
+    } as T;
+  }
+
+  let reopenIndex = -1;
+  for (let index = item.stages.length - 1; index >= 0; index -= 1) {
+    if (item.stages[index].status === "completed") {
+      reopenIndex = index;
+      break;
+    }
+  }
+  if (reopenIndex < 0) reopenIndex = Math.max(0, item.stages.length - 1);
+
+  const stages = item.stages.map((stage, index) =>
+    index === reopenIndex
+      ? { ...stage, status: "active" as const, completedAt: null }
+      : { ...stage }
+  );
+
+  return {
+    ...item,
+    status: "active" as const,
+    completedAt: null,
+    currentStageId: stages[reopenIndex]?.id ?? item.currentStageId,
+    stages,
+    updatedAt,
+  } as T;
+}
+
+export function isDueWithinNextDays(
+  item: TaskItem,
+  days = 3,
+  now = new Date(),
+) {
   const dueDate = getItemDueDate(item);
-  return item.status === "active"
-    && Boolean(dueDate)
-    && !isAfter(startOfDay(parseISO(dueDate!)), startOfDay(now));
+  if (item.status !== "active" || !dueDate || days < 1) return false;
+  const due = startOfDay(parseISO(dueDate));
+  const start = startOfDay(now);
+  const end = addDays(start, days);
+  return !isBefore(due, start) && isBefore(due, end);
 }

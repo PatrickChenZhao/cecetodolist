@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowRight,
   Check,
   Circle,
   Clock3,
@@ -9,17 +8,18 @@ import {
 import {
   MODULE_META,
   PERSONAL_URGENCY_LABELS,
-  WORK_URGENCY_LABELS,
+  WORK_PROCESS_STAGE_SHORT_LABELS,
 } from "@/lib/constants";
 import {
-  displayDueDate,
+  displayTaskCardDueDate,
   effectiveStageStatus,
   getCurrentStage,
   getItemDueDate,
+  isWorkflowTask,
   isDateOverdue,
   overdueDays,
 } from "@/lib/dates/dateCalculations";
-import type { TaskItem, WorkflowItem } from "@/types/tasks";
+import type { AnyWorkflowItem, TaskItem } from "@/types/tasks";
 
 interface TaskCardProps {
   item: TaskItem;
@@ -27,14 +27,16 @@ interface TaskCardProps {
   onComplete: (item: TaskItem) => void;
 }
 
-function StageProgress({ item }: { item: WorkflowItem }) {
+function StageProgress({ item }: { item: AnyWorkflowItem }) {
   return (
     <div className="stage-progress" aria-label="阶段进度">
       {item.stages.map((stage, index) => {
         const status = effectiveStageStatus(stage);
-        const shortName = stage.name
-          .replace("完成", "")
-          .replace("剪完视频", "剪辑");
+        const shortName = item.module === "work"
+          ? WORK_PROCESS_STAGE_SHORT_LABELS[stage.name] ?? stage.name
+          : stage.name
+            .replace("完成", "")
+            .replace("剪完视频", "剪辑");
         return (
           <div
             className="stage-step"
@@ -59,23 +61,20 @@ export function TaskCard({ item, onOpen, onComplete }: TaskCardProps) {
   const meta = MODULE_META[item.module];
   const dueDate = getItemDueDate(item);
   const overdue = isDateOverdue(dueDate);
-  const workflow = item.module === "social" || item.module === "advertising"
+  const workflow = isWorkflowTask(item) ? item : null;
+  const event = item.module === "personal"
+    || (item.module === "work" && item.workType === "event")
     ? item
     : null;
   const currentStage = workflow ? getCurrentStage(workflow) : null;
-  const completedStages = workflow
-    ? workflow.stages.filter((stage) => stage.status === "completed").length
-    : 0;
 
-  const urgency = item.module === "work"
-    ? WORK_URGENCY_LABELS[item.urgency]
-    : item.module === "personal"
-      ? PERSONAL_URGENCY_LABELS[item.urgency]
-      : null;
+  const urgency = event ? PERSONAL_URGENCY_LABELS[event.urgency] : null;
 
   return (
     <article
-      className="task-card"
+      className={`task-card ${workflow ? "workflow-task-card" : ""} ${
+        workflow?.module === "work" ? "work-process-card" : ""
+      } ${event ? "event-task-card" : ""}`}
       style={{ "--module-color": meta.color } as React.CSSProperties}
       onClick={() => onOpen(item)}
       tabIndex={0}
@@ -87,7 +86,40 @@ export function TaskCard({ item, onOpen, onComplete }: TaskCardProps) {
       <div className="task-title-row">
         <Circle size={15} className="task-circle" />
         <h3>{item.title}</h3>
-        <ArrowRight size={14} className="task-arrow" aria-hidden="true" />
+        {workflow ? (
+          <div className="workflow-card-actions">
+            <button
+              className="task-complete-button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onComplete(item);
+              }}
+            >
+              完成当前阶段
+            </button>
+            <span className="workflow-due-date">
+              <Clock3 size={12} /> {displayTaskCardDueDate(dueDate)}
+            </span>
+          </div>
+        ) : event ? (
+          <div className="event-card-actions">
+            <button
+              className="task-complete-button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onComplete(item);
+              }}
+            >
+              完成
+            </button>
+            <span
+              className="event-urgency"
+              data-urgent={event.urgency === "urgent"}
+            >
+              {urgency}
+            </span>
+          </div>
+        ) : null}
       </div>
 
       {workflow && currentStage ? (
@@ -96,13 +128,11 @@ export function TaskCard({ item, onOpen, onComplete }: TaskCardProps) {
             <span>当前阶段</span>
             <strong>{currentStage.name}</strong>
           </div>
-          <div className="task-meta-row">
-            <span><Clock3 size={12} /> 截止 {displayDueDate(dueDate)}</span>
-            <span>{completedStages} / {workflow.stages.length}</span>
-          </div>
           {overdue && dueDate && (
             <p className="overdue-label">
-              当前阶段已超时 {overdueDays(dueDate)} 天
+              {workflow.module === "work" ? "任务" : "当前阶段"}已超时{
+                " "
+              }{overdueDays(dueDate)} 天
             </p>
           )}
           <StageProgress item={workflow} />
@@ -110,26 +140,13 @@ export function TaskCard({ item, onOpen, onComplete }: TaskCardProps) {
       ) : (
         <>
           <div className="task-meta-row">
-            <span>{meta.label}{urgency ? ` · ${urgency}` : ""}</span>
-          </div>
-          <div className="task-meta-row">
-            <span><Clock3 size={12} /> {displayDueDate(dueDate)}</span>
+            <span><Clock3 size={12} /> {displayTaskCardDueDate(dueDate)}</span>
           </div>
           {overdue && dueDate && (
             <p className="overdue-label">已超时 {overdueDays(dueDate)} 天</p>
           )}
         </>
       )}
-
-      <button
-        className="task-complete-button"
-        onClick={(event) => {
-          event.stopPropagation();
-          onComplete(item);
-        }}
-      >
-        {workflow ? "完成当前阶段" : "完成"}
-      </button>
     </article>
   );
 }

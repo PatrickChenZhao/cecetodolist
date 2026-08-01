@@ -18,7 +18,7 @@
 
 html {
   min-height: 100%;
-  background: #f6f8fb;
+  background: #071326;
 }
 
 body {
@@ -26,8 +26,10 @@ body {
   min-height: 100vh;
   color: var(--ink);
   background:
-    radial-gradient(circle at top left, rgba(219, 234, 254, 0.45), transparent 35%),
-    linear-gradient(135deg, #f6f8fb 0%, #ffffff 55%, #f4f7fb 100%);
+    radial-gradient(circle at 7% 9%, rgba(14, 102, 224, 0.78), transparent 34%),
+    radial-gradient(circle at 48% -12%, rgba(36, 78, 145, 0.42), transparent 38%),
+    linear-gradient(135deg, #071831 0%, #0a1830 42%, #071224 100%);
+  background-attachment: fixed;
   font-family:
     -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
     "PingFang SC", "Helvetica Neue", Arial, sans-serif;
@@ -76,10 +78,12 @@ select:focus-visible,
   display: flex;
   flex-direction: column;
   width: var(--sidebar-width);
-  background: rgba(255, 255, 255, 0.78);
-  border-right: 1px solid var(--line);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  color: #dce7f7;
+  background: rgba(7, 18, 39, 0.78);
+  border-right: 1px solid rgba(210, 225, 255, 0.12);
+  box-shadow: 16px 0 42px rgba(1, 8, 22, 0.18);
+  backdrop-filter: blur(26px) saturate(125%);
+  -webkit-backdrop-filter: blur(26px) saturate(125%);
 }
 
 .desktop-sidebar {
@@ -97,9 +101,11 @@ select:focus-visible,
   inset: 16px auto 16px 16px;
   width: var(--sidebar-rail-width);
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  border: 1px solid rgba(210, 225, 255, 0.18);
   border-radius: 19px;
-  box-shadow: 0 12px 34px rgba(60, 86, 130, 0.08);
+  box-shadow:
+    0 18px 46px rgba(1, 7, 20, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .sidebar-brand {
@@ -126,7 +132,7 @@ select:focus-visible,
 
 .brand-copy small {
   margin-top: 2px;
-  color: var(--muted);
+  color: #8292aa;
   font-size: 10px;
 }
 
@@ -152,6 +158,15 @@ select:focus-visible,
   margin-left: auto;
 }
 
+.sidebar .icon-button {
+  color: #aebbd0;
+}
+
+.sidebar .icon-button:hover {
+  color: #f5f8ff;
+  background: rgba(172, 198, 239, 0.09);
+}
+
 .is-collapsed .sidebar-brand {
   justify-content: center;
   padding: 0;
@@ -161,10 +176,12 @@ select:focus-visible,
   margin-left: 0;
   width: 48px;
   height: 48px;
-  color: #3f70c5;
-  background: rgba(229, 238, 251, 0.82);
+  color: #f2f6ff;
+  background: rgba(116, 143, 190, 0.14);
   border-radius: 14px;
-  box-shadow: inset 0 0 0 1px rgba(91, 141, 239, 0.08);
+  box-shadow:
+    inset 0 0 0 1px rgba(218, 229, 249, 0.06),
+    0 8px 20px rgba(1, 7, 20, 0.16);
 }
 
 .sidebar-nav {
@@ -182,7 +199,7 @@ select:focus-visible,
 .nav-group-start {
   margin-top: 15px;
   padding-top: 15px;
-  border-top: 1px solid rgba(148, 163, 184, 0.13);
+  border-top: 1px solid rgba(210, 225, 255, 0.09);
 }
 
 .is-collapsed .nav-group-start:nth-child(2) {
@@ -202,7 +219,7 @@ select:focus-visible,
   min-height: 43px;
   padding: 0 12px;
   gap: 12px;
-  color: #656a72;
+  color: #aebbd0;
   background: transparent;
   border: 0;
   border-radius: 12px;
@@ -217,14 +234,16 @@ select:focus-visible,
 }
 
 .nav-item:hover {
-  color: var(--ink);
-  background: rgba(240, 243, 247, 0.82);
+  color: #f5f8ff;
+  background: rgba(172, 198, 239, 0.09);
 }
 
 .nav-item[data-active="true"] {
-  color: #1e4f9f;
-  background: rgba(229, 238, 251, 0.82);
-  box-shadow: inset 0 0 0 1px rgba(91, 141, 239, 0.07);
+  color: #f6f9ff;
+  background: rgba(113, 145, 198, 0.2);
+  box-shadow:
+    inset 0 0 0 1px rgba(205, 221, 249, 0.08),
+    0 7px 18px rgba(1, 7, 20, 0.14);
 }
 
 .is-collapsed .nav-item {
@@ -238,8 +257,8 @@ select:focus-visible,
   margin: auto 18px 22px;
   padding: 12px 0 0;
   gap: 8px;
-  color: #9a9da2;
-  border-top: 1px solid rgba(148, 163, 184, 0.13);
+  color: #73839b;
+  border-top: 1px solid rgba(210, 225, 255, 0.09);
   font-size: 10px;
   white-space: nowrap;
 }
@@ -255,7 +274,7 @@ select:focus-visible,
 .main-content {
   min-height: 100vh;
   margin-left: var(--sidebar-width);
-  transition: margin-left var(--ease);
+  transition: margin-left var(--ease), padding-bottom 340ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .main-content.sidebar-is-collapsed {
@@ -264,6 +283,10 @@ select:focus-visible,
 
 .main-content.with-composer {
   padding-bottom: 270px;
+}
+
+.main-content.with-composer.composer-is-collapsed {
+  padding-bottom: 96px;
 }
 
 .content-frame {
@@ -285,7 +308,7 @@ select:focus-visible,
 .eyebrow {
   display: block;
   margin-bottom: 7px;
-  color: #8290a5;
+  color: #8fa7c9;
   font-size: 10px;
   font-weight: 680;
   letter-spacing: 0.13em;
@@ -296,7 +319,7 @@ select:focus-visible,
 .dashboard-title-input,
 .view-header h1 {
   margin: 0;
-  color: var(--ink);
+  color: #f5f8ff;
   font-size: clamp(26px, 2.2vw, 34px);
   font-weight: 650;
   letter-spacing: -0.045em;
@@ -315,13 +338,13 @@ select:focus-visible,
 
 .dashboard-title-input:hover,
 .dashboard-title-input:focus {
-  background: rgba(255, 255, 255, 0.52);
+  background: rgba(205, 222, 250, 0.08);
 }
 
 .dashboard-header p,
 .view-header p {
   margin: 7px 0 0;
-  color: var(--muted);
+  color: #9aaac2;
   font-size: 13px;
 }
 
@@ -331,10 +354,15 @@ select:focus-visible,
   min-width: 180px;
   padding: 10px 12px 10px 17px;
   gap: 18px;
-  background: rgba(255, 255, 255, 0.63);
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  color: #f6f9ff;
+  background: rgba(26, 40, 66, 0.48);
+  border: 1px solid rgba(205, 222, 250, 0.16);
   border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.035);
+  box-shadow:
+    0 14px 34px rgba(1, 8, 22, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
 }
 
 .today-progress > div {
@@ -343,7 +371,7 @@ select:focus-visible,
 }
 
 .today-progress > div span {
-  color: var(--muted);
+  color: #a6b4c9;
   font-size: 10px;
 }
 
@@ -355,7 +383,7 @@ select:focus-visible,
 }
 
 .today-progress strong small {
-  color: #a1a4a8;
+  color: #8f9db3;
   font-size: 12px;
   font-weight: 500;
 }
@@ -366,7 +394,7 @@ select:focus-visible,
   place-items: center;
   width: 46px;
   height: 46px;
-  background: conic-gradient(#5b8def var(--progress), #edf0f4 0);
+  background: conic-gradient(#75a4ff var(--progress), rgba(205, 222, 250, 0.14) 0);
   border-radius: 50%;
 }
 
@@ -374,13 +402,13 @@ select:focus-visible,
   position: absolute;
   content: "";
   inset: 4px;
-  background: white;
+  background: #14223b;
   border-radius: 50%;
 }
 
 .progress-ring span {
   z-index: 1;
-  color: #64748b;
+  color: #dce7f7;
   font-size: 9px;
   font-weight: 650;
 }
@@ -399,12 +427,16 @@ select:focus-visible,
 .module-column {
   min-width: 0;
   overflow: hidden;
-  background: var(--card);
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  background:
+    linear-gradient(145deg, rgba(135, 166, 215, 0.12), rgba(20, 37, 66, 0.28)),
+    rgba(13, 28, 53, 0.5);
+  border: 1px solid rgba(205, 222, 250, 0.16);
   border-radius: 18px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    0 18px 44px rgba(1, 8, 22, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px) saturate(125%);
+  -webkit-backdrop-filter: blur(24px) saturate(125%);
 }
 
 .module-column-header {
@@ -413,7 +445,7 @@ select:focus-visible,
   min-height: 62px;
   padding: 0 17px;
   gap: 9px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  border-bottom: 1px solid rgba(205, 222, 250, 0.11);
 }
 
 .module-icon {
@@ -429,7 +461,8 @@ select:focus-visible,
 .module-column-header h2 {
   flex: 1;
   margin: 0;
-  font-size: 14px;
+  color: #f2f6ff;
+  font-size: 16px;
   font-weight: 630;
   letter-spacing: -0.015em;
 }
@@ -443,7 +476,7 @@ select:focus-visible,
   color: var(--module-color);
   background: var(--module-soft);
   border-radius: 8px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 650;
 }
 
@@ -484,17 +517,29 @@ select:focus-visible,
   transform: translateY(-1px);
 }
 
+.workflow-task-card {
+  padding: 10px;
+}
+
 .task-title-row {
   display: flex;
   align-items: flex-start;
   gap: 8px;
 }
 
+.workflow-task-card .task-title-row {
+  padding-right: 98px;
+}
+
+.event-task-card .task-title-row {
+  padding-right: 58px;
+}
+
 .task-title-row h3 {
   flex: 1;
   margin: -1px 0 0;
   overflow-wrap: anywhere;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 590;
   line-height: 1.45;
   letter-spacing: -0.01em;
@@ -520,6 +565,61 @@ select:focus-visible,
   transform: translateX(0);
 }
 
+.workflow-card-actions {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-end;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 3px;
+}
+
+.workflow-due-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #111111;
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.workflow-card-actions .task-complete-button {
+  min-height: 26px;
+  margin: 0;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+
+.event-card-actions {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.event-card-actions .task-complete-button {
+  min-height: 26px;
+  margin: 0;
+  padding: 0 9px;
+}
+
+.event-urgency {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 620;
+}
+
+.event-urgency[data-urgent="true"] {
+  color: #dc2626;
+}
+
 .current-stage {
   display: flex;
   flex-direction: column;
@@ -528,14 +628,25 @@ select:focus-visible,
 
 .current-stage span {
   color: var(--muted);
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .current-stage strong {
   margin-top: 2px;
   color: var(--module-color);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 620;
+}
+
+.workflow-task-card .current-stage {
+  align-items: center;
+  flex-direction: row;
+  margin: 7px 0 0 22px;
+  gap: 6px;
+}
+
+.workflow-task-card .current-stage strong {
+  margin-top: 0;
 }
 
 .task-meta-row {
@@ -543,8 +654,9 @@ select:focus-visible,
   align-items: center;
   justify-content: space-between;
   margin: 8px 0 0 23px;
-  color: #7b8088;
-  font-size: 10px;
+  color: #111111;
+  font-size: 13px;
+  font-weight: 650;
 }
 
 .task-meta-row span {
@@ -561,7 +673,7 @@ select:focus-visible,
   background: #fef2f2;
   border: 1px solid #fecaca;
   border-radius: 6px;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 620;
 }
 
@@ -569,6 +681,14 @@ select:focus-visible,
   display: flex;
   align-items: flex-start;
   margin: 13px 0 2px 23px;
+}
+
+.workflow-task-card .overdue-label {
+  margin: 6px 0 0 22px;
+}
+
+.workflow-task-card .stage-progress {
+  margin: 8px 0 0 22px;
 }
 
 .stage-step {
@@ -628,9 +748,14 @@ select:focus-visible,
   max-width: 43px;
   overflow: hidden;
   color: #9a9ea5;
-  font-size: 7px;
+  font-size: 9px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.work-process-card .stage-step small {
+  max-width: 66px;
+  font-size: 8px;
 }
 
 .task-complete-button {
@@ -642,7 +767,7 @@ select:focus-visible,
   background: var(--module-soft, #f3f6fb);
   border: 0;
   border-radius: 8px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 620;
   transition: filter var(--ease), transform var(--ease);
 }
@@ -676,8 +801,8 @@ select:focus-visible,
 
 .empty-state p {
   margin: 13px 0 8px;
-  color: #93979e;
-  font-size: 11px;
+  color: #8fa0b8;
+  font-size: 13px;
 }
 
 .empty-state button,
@@ -686,7 +811,7 @@ select:focus-visible,
   color: var(--module-color);
   background: transparent;
   border: 0;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 610;
 }
 
@@ -695,8 +820,8 @@ select:focus-visible,
   align-items: center;
   justify-content: space-between;
   padding: 8px 6px 2px;
-  color: var(--muted);
-  font-size: 10px;
+  color: #8fa0b8;
+  font-size: 12px;
 }
 
 .composer-dock {
@@ -710,20 +835,110 @@ select:focus-visible,
   padding: 20px 24px calc(18px + env(safe-area-inset-bottom));
   background: linear-gradient(
     to bottom,
-    rgba(246, 248, 251, 0),
-    rgba(246, 248, 251, 0.94) 24%,
-    rgba(246, 248, 251, 0.98)
+    rgba(7, 18, 36, 0),
+    rgba(7, 18, 36, 0.7) 35%,
+    rgba(7, 18, 36, 0.9)
   );
   pointer-events: none;
-  transition: left var(--ease);
+  transition:
+    left var(--ease),
+    padding 340ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.composer-dock[data-collapsed="true"] {
+  padding-top: 8px;
 }
 
 .main-content.sidebar-is-collapsed + .composer-dock {
   left: var(--sidebar-collapsed);
 }
 
-.dynamic-composer {
+.composer-stack {
+  display: grid;
   width: min(100%, 900px);
+  pointer-events: none;
+}
+
+.composer-expanded-shell,
+.composer-collapsed-bar {
+  grid-area: 1 / 1;
+  align-self: end;
+}
+
+.composer-expanded-shell {
+  max-height: 560px;
+  overflow: hidden;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  transform-origin: center bottom;
+  visibility: visible;
+  transition:
+    max-height 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 190ms ease,
+    transform 340ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s;
+}
+
+.composer-dock[data-collapsed="true"] .composer-expanded-shell {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(16px) scale(0.975);
+  visibility: hidden;
+  transition:
+    max-height 340ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 160ms ease,
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s 340ms;
+}
+
+.composer-collapsed-bar {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 46px;
+  padding: 0;
+  color: #4e7fd9;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 15px;
+  box-shadow:
+    0 14px 38px rgba(2, 10, 26, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(13px) scaleX(0.94);
+  transform-origin: center bottom;
+  visibility: hidden;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition:
+    opacity 160ms ease,
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    background var(--ease),
+    visibility 0s 320ms;
+}
+
+.composer-collapsed-bar:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px) scaleX(1);
+}
+
+.composer-dock[data-collapsed="true"] .composer-collapsed-bar {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scaleX(1);
+  visibility: visible;
+  transition:
+    opacity 190ms ease 100ms,
+    transform 360ms cubic-bezier(0.22, 1, 0.36, 1) 45ms,
+    background var(--ease),
+    visibility 0s;
+}
+
+.dynamic-composer {
+  width: 100%;
   padding: 10px;
   background: rgba(255, 255, 255, 0.88);
   border: 1px solid rgba(148, 163, 184, 0.2);
@@ -753,6 +968,32 @@ select:focus-visible,
   padding: 0 4px 4px;
 }
 
+.composer-source-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.composer-collapse-button {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: #7f858e;
+  background: #f3f5f8;
+  border: 0;
+  border-radius: 9px;
+  transition: color var(--ease), background var(--ease), transform var(--ease);
+}
+
+.composer-collapse-button:hover {
+  color: var(--module-color);
+  background: var(--module-soft);
+  transform: translateY(1px);
+}
+
 .module-select {
   display: inline-flex;
   align-items: center;
@@ -765,13 +1006,13 @@ select:focus-visible,
 }
 
 .module-select select {
-  max-width: 105px;
+  max-width: 135px;
   padding: 0 16px 0 0;
   color: inherit;
   background: transparent;
   border: 0;
   outline: 0;
-  font-size: 11px;
+  font-size: 15px;
   font-weight: 630;
   appearance: none;
 }
@@ -781,12 +1022,37 @@ select:focus-visible,
   pointer-events: none;
 }
 
+.work-type-toggle {
+  display: inline-flex;
+  padding: 2px;
+  gap: 2px;
+  background: #f2f4f7;
+  border-radius: 9px;
+}
+
+.work-type-toggle button {
+  min-height: 30px;
+  padding: 0 11px;
+  color: #6f747c;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 620;
+}
+
+.work-type-toggle button[data-active="true"] {
+  color: var(--module-color);
+  background: white;
+  box-shadow: 0 2px 7px rgba(31, 41, 55, 0.07);
+}
+
 .composer-hint {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   color: #9da1a7;
-  font-size: 9px;
+  font-size: 13px;
 }
 
 .composer-title-input {
@@ -804,7 +1070,7 @@ select:focus-visible,
   background: transparent;
   border: 0;
   outline: 0;
-  font-size: 13px;
+  font-size: 17px;
   line-height: 1.5;
 }
 
@@ -821,7 +1087,7 @@ select:focus-visible,
 
 .option-label {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 14px;
 }
 
 .segmented-control {
@@ -844,7 +1110,7 @@ select:focus-visible,
   background: transparent;
   border: 0;
   border-radius: 7px;
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 560;
   transition: all var(--ease);
 }
@@ -862,6 +1128,15 @@ select:focus-visible,
   gap: 7px;
 }
 
+.work-process-options {
+  padding: 5px 8px 9px;
+}
+
+.work-process-due-date {
+  display: block;
+  width: min(100%, 230px);
+}
+
 .date-field {
   min-width: 0;
 }
@@ -873,7 +1148,7 @@ select:focus-visible,
   margin: 0 2px 4px;
   gap: 5px;
   color: #747981;
-  font-size: 9px;
+  font-size: 13px;
 }
 
 .date-field small {
@@ -881,7 +1156,7 @@ select:focus-visible,
   color: var(--module-color);
   background: var(--module-soft);
   border-radius: 4px;
-  font-size: 7px;
+  font-size: 11px;
 }
 
 .date-field small[data-source="manual"] {
@@ -895,12 +1170,20 @@ select:focus-visible,
   min-width: 0;
   height: 34px;
   padding: 0 7px;
-  color: #565b63;
+  color: #111111;
   background: #f8f9fb;
   border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 8px;
-  font-size: 9px;
+  font-weight: 650;
   outline: 0;
+}
+
+.date-field input {
+  font-size: 14px;
+}
+
+.detail-field input[type="date"] {
+  font-size: 9px;
 }
 
 .date-field input:focus,
@@ -918,7 +1201,18 @@ select:focus-visible,
 
 .composer-actions > span {
   color: #a0a3a8;
-  font-size: 8px;
+  font-size: 12px;
+}
+
+.composer-primary-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  gap: 11px;
+}
+
+.composer-primary-actions .composer-hint {
+  white-space: nowrap;
 }
 
 .create-button {
@@ -931,7 +1225,7 @@ select:focus-visible,
   background: var(--module-color);
   border: 0;
   border-radius: 9px;
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 630;
   box-shadow: 0 4px 12px color-mix(in srgb, var(--module-color) 24%, transparent);
   transition: opacity var(--ease), transform var(--ease);
@@ -947,10 +1241,511 @@ select:focus-visible,
   transform: translateY(-1px);
 }
 
+.deadline-calendar-view {
+  width: 100%;
+  min-width: 0;
+}
+
+.deadline-calendar-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  min-height: 90px;
+  margin-bottom: 24px;
+  gap: 24px;
+}
+
+.deadline-calendar-header h1 {
+  margin: 0;
+  color: #f5f8ff;
+  font-size: clamp(26px, 2.2vw, 34px);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+}
+
+.deadline-calendar-header p {
+  margin: 7px 0 0;
+  color: #9aaac2;
+  font-size: 13px;
+}
+
+.deadline-calendar-summary {
+  display: flex;
+  align-items: center;
+  min-height: 43px;
+  padding: 0 14px;
+  gap: 7px;
+  color: #a9c7ff;
+  background: rgba(26, 40, 66, 0.48);
+  border: 1px solid rgba(205, 222, 250, 0.16);
+  border-radius: 13px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.deadline-calendar-summary strong {
+  color: #f5f8ff;
+  font-size: 16px;
+}
+
+.deadline-calendar-shell {
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(135, 166, 215, 0.12), rgba(20, 37, 66, 0.28)),
+    rgba(13, 28, 53, 0.58);
+  border: 1px solid rgba(205, 222, 250, 0.16);
+  border-radius: 20px;
+  box-shadow:
+    0 18px 44px rgba(1, 8, 22, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px) saturate(125%);
+  -webkit-backdrop-filter: blur(24px) saturate(125%);
+}
+
+.deadline-month-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 72px;
+  padding: 0 18px 0 21px;
+  border-bottom: 1px solid rgba(205, 222, 250, 0.11);
+}
+
+.deadline-month-toolbar > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.deadline-month-toolbar > div:first-child > svg {
+  color: #75a4ff;
+}
+
+.deadline-month-toolbar h2 {
+  margin: 0;
+  color: #f2f6ff;
+  font-size: 18px;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+}
+
+.deadline-month-actions button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: #dce7f7;
+  background: rgba(205, 222, 250, 0.09);
+  border: 1px solid rgba(205, 222, 250, 0.1);
+  border-radius: 10px;
+  transition: background var(--ease), transform var(--ease), opacity var(--ease);
+}
+
+.deadline-month-actions button:not(:disabled):hover {
+  background: rgba(205, 222, 250, 0.16);
+  transform: translateY(-1px);
+}
+
+.deadline-month-actions button:disabled {
+  opacity: 0.24;
+  cursor: not-allowed;
+}
+
+.deadline-calendar-scroll {
+  padding: 0 12px 12px;
+  overflow-x: auto;
+  scrollbar-color: rgba(143, 167, 201, 0.45) transparent;
+}
+
+.deadline-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(104px, 1fr));
+  min-width: 728px;
+  gap: 6px;
+}
+
+.deadline-weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  color: #98a9c1;
+  font-size: 11px;
+  font-weight: 620;
+}
+
+.deadline-weekday[data-weekend="true"] {
+  color: #b29ccf;
+}
+
+.deadline-date-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 10px;
+  overflow: hidden;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(205, 222, 250, 0.12);
+  border-radius: 12px;
+  aspect-ratio: 1;
+  text-align: left;
+}
+
+button.deadline-date-cell {
+  cursor: pointer;
+  transition: transform var(--ease), background var(--ease), box-shadow var(--ease);
+}
+
+button.deadline-date-cell:hover {
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 24px rgba(1, 8, 22, 0.16);
+  transform: translateY(-2px);
+}
+
+.deadline-date-cell.is-outside {
+  background: rgba(205, 222, 250, 0.025);
+  border-color: rgba(205, 222, 250, 0.035);
+}
+
+.deadline-date-cell[data-today="true"] {
+  border-color: rgba(91, 141, 239, 0.6);
+  box-shadow: inset 0 0 0 1px rgba(91, 141, 239, 0.2);
+}
+
+.deadline-date-cell[data-today="true"] .deadline-date-number {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin: -3px 0 0 -3px;
+  color: white;
+  background: #5b8def;
+  border-radius: 8px;
+}
+
+.deadline-date-number {
+  flex: 0 0 auto;
+  color: #6d737c;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.deadline-cell-items {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  margin-top: 8px;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.calendar-deadline-entry {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  gap: 6px;
+}
+
+.calendar-deadline-entry > i {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-top: 4px;
+  background: var(--deadline-color);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--deadline-color) 12%, white);
+}
+
+.calendar-deadline-entry > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.calendar-deadline-entry strong,
+.calendar-deadline-entry small {
+  overflow: hidden;
+  color: var(--deadline-color);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-deadline-entry strong {
+  font-size: 10px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.calendar-deadline-entry small {
+  opacity: 0.72;
+  font-size: 8px;
+  line-height: 1.25;
+}
+
+.deadline-calendar-more {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 18px;
+  margin-top: auto;
+  color: #748198;
+  background: #edf2f8;
+  border-radius: 7px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: -0.18em;
+}
+
+.deadline-day-layer {
+  position: fixed;
+  z-index: 75;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.deadline-day-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background: rgba(3, 11, 25, 0.42);
+  border: 0;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  animation: fade-in 180ms ease both;
+}
+
+.deadline-day-dialog {
+  position: relative;
+  width: min(100%, 470px);
+  max-height: min(78vh, 680px);
+  overflow: hidden;
+  background: rgba(250, 252, 255, 0.97);
+  border: 1px solid rgba(205, 222, 250, 0.34);
+  border-radius: 19px;
+  box-shadow: 0 24px 70px rgba(1, 8, 22, 0.32);
+  animation: card-in 210ms ease both;
+}
+
+.deadline-day-dialog > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 82px;
+  padding: 17px 19px 16px 22px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.deadline-day-dialog > header span {
+  color: #8c929b;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.deadline-day-dialog > header h2 {
+  margin: 5px 0 0;
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.deadline-day-list {
+  display: flex;
+  max-height: calc(min(78vh, 680px) - 82px);
+  padding: 10px;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+}
+
+.deadline-day-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 62px;
+  padding: 10px 12px;
+  gap: 11px;
+  background: white;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 12px;
+  text-align: left;
+  transition: border-color var(--ease), background var(--ease), transform var(--ease);
+}
+
+.deadline-day-item:hover {
+  background: color-mix(in srgb, var(--deadline-color) 4%, white);
+  border-color: color-mix(in srgb, var(--deadline-color) 28%, white);
+  transform: translateX(2px);
+}
+
+.deadline-day-type-dot {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  background: var(--deadline-color);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--deadline-color) 12%, white);
+}
+
+.deadline-day-item > span:nth-child(2) {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.deadline-day-item strong {
+  overflow: hidden;
+  color: var(--deadline-color);
+  font-size: 13px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deadline-day-item small {
+  overflow: hidden;
+  color: #8b9098;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deadline-day-item > svg {
+  flex: 0 0 auto;
+  color: #b6bbc3;
+}
+
 .detail-layer {
   position: fixed;
   z-index: 80;
   inset: 0;
+}
+
+.next-stage-date-layer {
+  position: fixed;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  inset: 0;
+}
+
+.next-stage-date-backdrop {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  inset: 0;
+  background: rgba(7, 15, 30, 0.34);
+  border: 0;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  animation: fade-in 180ms ease both;
+}
+
+.next-stage-date-dialog {
+  position: relative;
+  width: min(100%, 390px);
+  padding: 20px;
+  color: #17191d;
+  background: rgba(252, 253, 255, 0.97);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(7, 15, 30, 0.24);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  animation: next-stage-dialog-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.next-stage-date-dialog > header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.next-stage-date-dialog > header > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.next-stage-date-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  color: #4e7fd9;
+  background: #edf4ff;
+  border-radius: 11px;
+}
+
+.next-stage-date-dialog small {
+  display: block;
+  margin-bottom: 3px;
+  color: #8a9099;
+  font-size: 9px;
+}
+
+.next-stage-date-dialog h2 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.next-stage-date-dialog > label {
+  display: flex;
+  flex-direction: column;
+  margin-top: 22px;
+  gap: 8px;
+  color: #6c727c;
+  font-size: 10px;
+  font-weight: 620;
+}
+
+.next-stage-date-dialog input[type="date"] {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  color: #111111;
+  background: white;
+  border: 1px solid rgba(78, 127, 217, 0.22);
+  border-radius: 11px;
+  outline: 0;
+  font-size: 13px;
+  font-weight: 680;
+}
+
+.next-stage-date-dialog input[type="date"]:focus {
+  border-color: #6e97e1;
+  box-shadow: 0 0 0 3px rgba(78, 127, 217, 0.1);
+}
+
+.next-stage-date-dialog > p {
+  margin: 10px 0 0;
+  color: #8a9099;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.next-stage-date-dialog > footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  gap: 8px;
 }
 
 .detail-backdrop {
@@ -1052,7 +1847,8 @@ select:focus-visible,
 .detail-field input[type="date"] {
   height: 41px;
   padding: 0 11px;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 650;
 }
 
 .detail-stages {
@@ -1146,6 +1942,30 @@ select:focus-visible,
   padding: 0 0 21px;
 }
 
+.detail-stage-rewind {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-height: 26px;
+  margin-left: auto;
+  padding: 0 8px;
+  gap: 4px;
+  color: #68707b;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 7px;
+  font-size: 8px;
+  font-weight: 620;
+  white-space: nowrap;
+  transition: color var(--ease), background var(--ease), border-color var(--ease);
+}
+
+.detail-stage-rewind:hover {
+  color: var(--module-color);
+  background: color-mix(in srgb, var(--module-color) 7%, white);
+  border-color: color-mix(in srgb, var(--module-color) 28%, white);
+}
+
 .detail-stage-body > div {
   display: flex;
   align-items: center;
@@ -1177,11 +1997,12 @@ select:focus-visible,
 .detail-stage-body label input {
   height: 28px;
   padding: 0 5px;
-  color: #6a7078;
+  color: #111111;
   background: #f5f7f9;
   border: 1px solid rgba(148, 163, 184, 0.14);
   border-radius: 7px;
-  font-size: 8px;
+  font-size: 9px;
+  font-weight: 650;
 }
 
 .detail-stage-body label span {
@@ -1467,6 +2288,7 @@ select:focus-visible,
   color: #c0c4ca;
 }
 
+.completed-restore,
 .completed-delete {
   display: grid;
   place-items: center;
@@ -1479,6 +2301,15 @@ select:focus-visible,
   border-radius: 9px;
 }
 
+.completed-restore {
+  color: #6d8fc8;
+}
+
+.completed-restore:hover {
+  color: #315d9e;
+  background: #edf4ff;
+}
+
 .completed-delete:hover {
   color: #dc2626;
   background: #fef2f2;
@@ -1488,6 +2319,24 @@ select:focus-visible,
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+}
+
+.reminder-settings-grid {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: start;
+}
+
+.reminder-settings-grid .theme-settings-card {
+  grid-column: span 7;
+}
+
+.notification-settings-card {
+  grid-column: span 5;
+}
+
+.reminder-schedule-card,
+.attention-card {
+  grid-column: 1 / -1;
 }
 
 .settings-card,
@@ -1530,6 +2379,117 @@ select:focus-visible,
   color: #969aa1;
   font-size: 9px;
   line-height: 1.5;
+}
+
+.theme-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.theme-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 74px;
+  padding: 9px;
+  gap: 10px;
+  background: #f7f8fa;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 12px;
+  text-align: left;
+  transition: border-color var(--ease), box-shadow var(--ease), transform var(--ease);
+}
+
+.theme-option:hover {
+  transform: translateY(-1px);
+}
+
+.theme-option[data-active="true"] {
+  border-color: rgba(91, 141, 239, 0.55);
+  box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.1);
+}
+
+.theme-option > span:nth-child(2) {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.theme-option strong {
+  font-size: 11px;
+  font-weight: 640;
+}
+
+.theme-option small {
+  overflow: hidden;
+  color: #969aa1;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.theme-preview {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: repeat(2, 1fr);
+  width: 48px;
+  height: 42px;
+  padding: 7px 5px 5px 14px;
+  gap: 3px;
+  overflow: hidden;
+  background: #0a1830;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.theme-preview > i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 9px;
+  background: rgba(4, 14, 32, 0.82);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.theme-preview > b {
+  align-self: end;
+  height: 22px;
+  background: rgba(123, 155, 205, 0.16);
+  border: 1px solid rgba(219, 231, 250, 0.16);
+  border-radius: 3px;
+}
+
+.theme-preview[data-theme-preview="bright"] {
+  background: linear-gradient(135deg, #eef3fa, #ffffff);
+  box-shadow: inset 0 0 0 1px rgba(100, 116, 139, 0.12);
+}
+
+.theme-preview[data-theme-preview="bright"] > i {
+  background: rgba(255, 255, 255, 0.88);
+  border-right-color: rgba(100, 116, 139, 0.12);
+}
+
+.theme-preview[data-theme-preview="bright"] > b {
+  background: rgba(255, 255, 255, 0.76);
+  border-color: rgba(100, 116, 139, 0.14);
+}
+
+.theme-selected-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
+  background: #d8dde5;
+  border-radius: 50%;
+}
+
+.theme-option[data-active="true"] .theme-selected-dot {
+  background: #5b8def;
+  box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.12);
 }
 
 .switch-row {
@@ -1682,8 +2642,469 @@ select:focus-visible,
 }
 
 .due-list button small {
+  color: #111111;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.browser-notification-switch {
+  padding: 4px 0 12px;
+}
+
+.browser-notification-switch input:disabled + i {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.notification-permission-state {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 8px 10px;
+  gap: 7px;
+  color: #7b818a;
+  background: #f6f8fa;
+  border-radius: 10px;
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.notification-permission-state[data-state="granted"] {
+  color: #438268;
+  background: #ebf8f2;
+}
+
+.notification-permission-state[data-state="denied"] {
+  color: #b45309;
+  background: #fff7ed;
+}
+
+.reminder-mode-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.95fr 1fr;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.reminder-mode-option {
+  min-width: 0;
+  padding: 13px;
+  background: #f7f8fa;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 13px;
+  transition: border-color var(--ease), box-shadow var(--ease), background var(--ease);
+}
+
+.reminder-mode-option[data-active="true"] {
+  background: #f0f5ff;
+  border-color: rgba(91, 141, 239, 0.45);
+  box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.08);
+}
+
+.reminder-mode-option > label {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.reminder-mode-option > label input {
+  margin: 0;
+  accent-color: #5b8def;
+}
+
+.reminder-mode-option > label > svg {
+  color: #6981aa;
+}
+
+.reminder-mode-option > label > span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reminder-mode-option > label strong {
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.reminder-mode-option > label small {
   color: #969aa1;
   font-size: 8px;
+}
+
+.custom-reminder-control {
+  display: flex;
+  align-items: center;
+  margin-top: 13px;
+  gap: 5px;
+  color: #737983;
+  font-size: 8px;
+}
+
+.custom-reminder-control select,
+.morning-evening-times input,
+.reminder-time-inputs input {
+  height: 30px;
+  color: #303640;
+  background: white;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 8px;
+  outline: none;
+}
+
+.custom-reminder-control select {
+  min-width: 46px;
+  padding: 0 7px;
+}
+
+.custom-reminder-control button {
+  min-height: 30px;
+  margin-left: auto;
+  padding: 0 9px;
+  color: #315d9e;
+  background: #e8f0ff;
+  border: 0;
+  border-radius: 8px;
+  font-size: 8px;
+  font-weight: 620;
+}
+
+.reminder-time-chips {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  gap: 5px;
+}
+
+.reminder-time-chips span {
+  padding: 4px 7px;
+  color: #52667f;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 7px;
+  font-size: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.reminder-time-chips.compact {
+  margin-top: 13px;
+}
+
+.reminder-time-chips.compact span {
+  padding: 3px 5px;
+}
+
+.morning-evening-times {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 13px;
+  gap: 7px;
+}
+
+.morning-evening-times label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: #868b93;
+  font-size: 8px;
+}
+
+.morning-evening-times input {
+  width: 100%;
+  padding: 0 7px;
+  font-size: 9px;
+}
+
+.attention-groups {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.attention-group {
+  min-width: 0;
+  padding: 10px;
+  background: #f7f8fa;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 12px;
+}
+
+.attention-group > header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  min-height: 26px;
+  margin-bottom: 6px;
+  gap: 7px;
+}
+
+.attention-group > header i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.attention-group > header strong {
+  overflow: hidden;
+  font-size: 9px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attention-group > header span {
+  display: grid;
+  place-items: center;
+  min-width: 19px;
+  height: 19px;
+  color: #6c7480;
+  background: white;
+  border-radius: 6px;
+  font-size: 8px;
+}
+
+.attention-group .due-list > p {
+  margin: 10px 0;
+  color: #a0a4aa;
+  font-size: 8px;
+  text-align: center;
+}
+
+.attention-group .due-list button {
+  min-height: 52px;
+  padding: 0 7px;
+  background: white;
+}
+
+.attention-group .attention-item-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  white-space: normal;
+}
+
+.attention-item-copy strong {
+  overflow: hidden;
+  font-size: 9px;
+  font-weight: 590;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attention-item-copy em {
+  overflow: hidden;
+  color: #818892;
+  font-size: 8px;
+  font-style: normal;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reminder-time-dialog-layer {
+  position: fixed;
+  z-index: 140;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.reminder-time-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 18, 35, 0.34);
+  border: 0;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.reminder-time-dialog {
+  position: relative;
+  width: min(420px, 100%);
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 17px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+}
+
+.reminder-time-dialog > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.reminder-time-dialog h2 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.reminder-time-dialog header p {
+  margin: 5px 0 0;
+  color: #8d9299;
+  font-size: 9px;
+}
+
+.reminder-time-dialog header button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: #737983;
+  background: #f1f3f6;
+  border: 0;
+  border-radius: 9px;
+}
+
+.reminder-time-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.reminder-time-inputs label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: #727881;
+  font-size: 9px;
+}
+
+.reminder-time-inputs input {
+  width: 100%;
+  padding: 0 9px;
+  font-size: 10px;
+}
+
+.reminder-time-error {
+  margin: 10px 0 0;
+  color: #b45309;
+  font-size: 9px;
+}
+
+.reminder-time-dialog > footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 17px;
+  padding-top: 14px;
+  gap: 8px;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+/* The reminder workspace intentionally uses type that is 3px larger. */
+.reminders-view .eyebrow {
+  font-size: 13px;
+}
+
+.reminders-view .view-header h1 {
+  font-size: clamp(29px, calc(2.2vw + 3px), 37px);
+}
+
+.reminders-view .view-header p {
+  font-size: 16px;
+}
+
+.reminders-view .settings-card h2 {
+  font-size: 16px;
+}
+
+.reminders-view .settings-card header p {
+  font-size: 12px;
+}
+
+.reminders-view .theme-option strong {
+  font-size: 14px;
+}
+
+.reminders-view .theme-option small {
+  font-size: 11px;
+}
+
+.reminders-view .switch-row strong {
+  font-size: 13px;
+}
+
+.reminders-view .switch-row small {
+  font-size: 11px;
+}
+
+.reminders-view .notification-permission-state {
+  font-size: 11px;
+}
+
+.reminders-view .reminder-mode-option > label strong {
+  font-size: 13px;
+}
+
+.reminders-view .reminder-mode-option > label small {
+  font-size: 11px;
+}
+
+.reminders-view .custom-reminder-control,
+.reminders-view .custom-reminder-control select,
+.reminders-view .custom-reminder-control button {
+  font-size: 11px;
+}
+
+.reminders-view .reminder-time-chips span {
+  font-size: 11px;
+}
+
+.reminders-view .morning-evening-times label {
+  font-size: 11px;
+}
+
+.reminders-view .morning-evening-times input {
+  font-size: 12px;
+}
+
+.reminders-view .attention-group > header strong {
+  font-size: 12px;
+}
+
+.reminders-view .attention-group > header span,
+.reminders-view .attention-group .due-list > p {
+  font-size: 11px;
+}
+
+.reminders-view .attention-item-copy strong {
+  font-size: 12px;
+}
+
+.reminders-view .attention-item-copy em {
+  font-size: 11px;
+}
+
+.reminders-view .due-list button small {
+  font-size: 12px;
+}
+
+.reminders-view .quiet-message {
+  font-size: 13px;
+}
+
+.reminders-view .reminder-time-dialog h2 {
+  font-size: 17px;
+}
+
+.reminders-view .reminder-time-dialog header p,
+.reminders-view .reminder-time-inputs label,
+.reminders-view .reminder-time-error {
+  font-size: 12px;
+}
+
+.reminders-view .reminder-time-inputs input,
+.reminders-view .reminder-time-dialog .primary-button,
+.reminders-view .reminder-time-dialog .secondary-button {
+  font-size: 13px;
 }
 
 .quiet-message {
@@ -1935,6 +3356,14 @@ select:focus-visible,
   pointer-events: none;
 }
 
+.toast-stack.avoid-composer {
+  bottom: 260px;
+}
+
+.app-root.composer-collapsed .toast-stack.avoid-composer {
+  bottom: calc(82px + env(safe-area-inset-bottom));
+}
+
 .undo-toast {
   position: relative;
   display: flex;
@@ -1965,7 +3394,7 @@ select:focus-visible,
 .undo-toast-copy span {
   flex: 1;
   overflow: hidden;
-  font-size: 10px;
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1978,7 +3407,7 @@ select:focus-visible,
   color: #cbd5e1;
   background: rgba(255, 255, 255, 0.08);
   border-radius: 7px;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .undo-toast button {
@@ -1991,7 +3420,7 @@ select:focus-visible,
   background: rgba(91, 141, 239, 0.14);
   border: 0;
   border-radius: 8px;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 620;
 }
 
@@ -2012,7 +3441,7 @@ select:focus-visible,
 }
 
 .summary-toast > span {
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .save-notice {
@@ -2126,6 +3555,205 @@ select:focus-visible,
   font-size: 10px;
 }
 
+html[data-theme="bright"] {
+  background: #f6f8fb;
+}
+
+html[data-theme="bright"] body {
+  background:
+    radial-gradient(circle at top left, rgba(219, 234, 254, 0.45), transparent 35%),
+    linear-gradient(135deg, #f6f8fb 0%, #ffffff 55%, #f4f7fb 100%);
+  background-attachment: scroll;
+}
+
+html[data-theme="bright"] .sidebar {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.78);
+  border-right-color: var(--line);
+  box-shadow: none;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+html[data-theme="bright"] .desktop-sidebar.is-collapsed {
+  border-color: rgba(148, 163, 184, 0.2);
+  box-shadow: 0 12px 34px rgba(60, 86, 130, 0.08);
+}
+
+html[data-theme="bright"] .brand-copy small {
+  color: var(--muted);
+}
+
+html[data-theme="bright"] .sidebar .icon-button {
+  color: #6e7278;
+}
+
+html[data-theme="bright"] .sidebar .icon-button:hover {
+  color: var(--ink);
+  background: rgba(120, 132, 151, 0.09);
+}
+
+html[data-theme="bright"] .is-collapsed .sidebar-collapse {
+  color: #3f70c5;
+  background: rgba(229, 238, 251, 0.82);
+  box-shadow: inset 0 0 0 1px rgba(91, 141, 239, 0.08);
+}
+
+html[data-theme="bright"] .nav-group-start {
+  border-top-color: rgba(148, 163, 184, 0.13);
+}
+
+html[data-theme="bright"] .nav-item {
+  color: #656a72;
+}
+
+html[data-theme="bright"] .nav-item:hover {
+  color: var(--ink);
+  background: rgba(240, 243, 247, 0.82);
+}
+
+html[data-theme="bright"] .nav-item[data-active="true"] {
+  color: #1e4f9f;
+  background: rgba(229, 238, 251, 0.82);
+  box-shadow: inset 0 0 0 1px rgba(91, 141, 239, 0.07);
+}
+
+html[data-theme="bright"] .sidebar-foot {
+  color: #9a9da2;
+  border-top-color: rgba(148, 163, 184, 0.13);
+}
+
+html[data-theme="bright"] .eyebrow {
+  color: #8290a5;
+}
+
+html[data-theme="bright"] .dashboard-header h1,
+html[data-theme="bright"] .dashboard-title-input,
+html[data-theme="bright"] .view-header h1 {
+  color: var(--ink);
+}
+
+html[data-theme="bright"] .dashboard-title-input:hover,
+html[data-theme="bright"] .dashboard-title-input:focus {
+  background: rgba(255, 255, 255, 0.52);
+}
+
+html[data-theme="bright"] .dashboard-header p,
+html[data-theme="bright"] .view-header p,
+html[data-theme="bright"] .deadline-calendar-header p {
+  color: var(--muted);
+}
+
+html[data-theme="bright"] .deadline-calendar-header h1 {
+  color: var(--ink);
+}
+
+html[data-theme="bright"] .deadline-calendar-summary {
+  color: #527dcc;
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(148, 163, 184, 0.14);
+}
+
+html[data-theme="bright"] .deadline-calendar-summary strong {
+  color: var(--ink);
+}
+
+html[data-theme="bright"] .deadline-calendar-shell {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(148, 163, 184, 0.16);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+}
+
+html[data-theme="bright"] .deadline-month-toolbar {
+  border-bottom-color: rgba(148, 163, 184, 0.12);
+}
+
+html[data-theme="bright"] .deadline-month-toolbar h2 {
+  color: var(--ink);
+}
+
+html[data-theme="bright"] .deadline-month-actions button {
+  color: #5f6d82;
+  background: #f3f6fa;
+  border-color: rgba(148, 163, 184, 0.14);
+}
+
+html[data-theme="bright"] .deadline-weekday {
+  color: #777e89;
+}
+
+html[data-theme="bright"] .deadline-date-cell {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+html[data-theme="bright"] .deadline-date-cell.is-outside {
+  background: rgba(237, 241, 246, 0.44);
+  border-color: rgba(148, 163, 184, 0.06);
+}
+
+html[data-theme="bright"] .today-progress {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.63);
+  border-color: rgba(148, 163, 184, 0.14);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.035);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-theme="bright"] .today-progress > div span {
+  color: var(--muted);
+}
+
+html[data-theme="bright"] .today-progress strong small {
+  color: #a1a4a8;
+}
+
+html[data-theme="bright"] .progress-ring {
+  background: conic-gradient(#5b8def var(--progress), #edf0f4 0);
+}
+
+html[data-theme="bright"] .progress-ring::after {
+  background: white;
+}
+
+html[data-theme="bright"] .progress-ring span {
+  color: #64748b;
+}
+
+html[data-theme="bright"] .module-column {
+  background: var(--card);
+  border-color: rgba(148, 163, 184, 0.16);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html[data-theme="bright"] .module-column-header {
+  border-bottom-color: rgba(148, 163, 184, 0.12);
+}
+
+html[data-theme="bright"] .module-column-header h2 {
+  color: var(--ink);
+}
+
+html[data-theme="bright"] .empty-state p {
+  color: #93979e;
+}
+
+html[data-theme="bright"] .remaining-items {
+  color: var(--muted);
+}
+
+html[data-theme="bright"] .composer-dock {
+  background: linear-gradient(
+    to bottom,
+    rgba(246, 248, 251, 0),
+    rgba(246, 248, 251, 0.94) 24%,
+    rgba(246, 248, 251, 0.98)
+  );
+}
+
 @keyframes card-in {
   from { opacity: 0; transform: translateY(5px); }
 }
@@ -2144,6 +3772,13 @@ select:focus-visible,
 
 @keyframes fade-in {
   from { opacity: 0; }
+}
+
+@keyframes next-stage-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
 }
 
 @keyframes spin {
@@ -2258,14 +3893,83 @@ select:focus-visible,
   .backup-actions-grid {
     grid-template-columns: 1fr;
   }
+
+  .reminder-settings-grid > .settings-card {
+    grid-column: 1;
+  }
+
+  .reminder-mode-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .reminder-mode-option:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .attention-groups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .deadline-calendar-grid {
+    grid-template-columns: repeat(7, 108px);
+    min-width: max-content;
+  }
 }
 
 @media (max-width: 640px) {
   .dashboard-header,
-  .view-header {
+  .view-header,
+  .deadline-calendar-header {
     align-items: flex-start;
     min-height: auto;
     margin-bottom: 22px;
+  }
+
+  .deadline-calendar-header {
+    flex-direction: column;
+    gap: 13px;
+  }
+
+  .deadline-calendar-summary {
+    min-height: 38px;
+  }
+
+  .deadline-calendar-shell {
+    border-radius: 16px;
+  }
+
+  .deadline-month-toolbar {
+    min-height: 62px;
+    padding: 0 12px 0 15px;
+  }
+
+  .deadline-month-toolbar h2 {
+    font-size: 16px;
+  }
+
+  .deadline-calendar-scroll {
+    padding: 0 8px 8px;
+  }
+
+  .deadline-calendar-grid {
+    grid-template-columns: repeat(7, 96px);
+    gap: 5px;
+  }
+
+  .deadline-date-cell {
+    padding: 8px;
+    border-radius: 10px;
+  }
+
+  .deadline-day-layer {
+    align-items: end;
+    padding: 12px;
+  }
+
+  .deadline-day-dialog {
+    width: 100%;
+    max-height: 82vh;
+    border-radius: 18px;
   }
 
   .today-progress {
@@ -2278,6 +3982,19 @@ select:focus-visible,
   }
 
   .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reminder-mode-grid,
+  .attention-groups {
+    grid-template-columns: 1fr;
+  }
+
+  .reminder-mode-option:first-child {
+    grid-column: 1;
+  }
+
+  .reminder-time-inputs {
     grid-template-columns: 1fr;
   }
 
@@ -2295,9 +4012,18 @@ select:focus-visible,
     border-radius: 17px;
   }
 
-  .composer-hint,
-  .composer-actions > span {
+  .composer-shortcut {
     display: none;
+  }
+
+  .composer-primary-actions {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .composer-primary-actions .composer-hint {
+    font-size: 11px;
   }
 
   .composer-options {
@@ -2383,6 +4109,14 @@ select:focus-visible,
     right: 12px;
     bottom: calc(12px + env(safe-area-inset-bottom));
     width: calc(100vw - 24px);
+  }
+
+  .toast-stack.avoid-composer {
+    bottom: calc(430px + env(safe-area-inset-bottom));
+  }
+
+  .app-root.composer-collapsed .toast-stack.avoid-composer {
+    bottom: calc(76px + env(safe-area-inset-bottom));
   }
 
   .save-notice {

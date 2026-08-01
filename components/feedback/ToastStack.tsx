@@ -7,16 +7,21 @@ export function ToastStack({
   actions,
   onUndo,
   now,
+  avoidComposer,
 }: {
   actions: PendingAction[];
   onUndo: (id: string) => void;
   now: number;
+  avoidComposer: boolean;
 }) {
   const visible = actions.slice(-3).reverse();
   const hidden = actions.length - visible.length;
 
   return (
-    <div className="toast-stack" aria-live="polite">
+    <div
+      className={`toast-stack ${avoidComposer ? "avoid-composer" : ""}`}
+      aria-live="polite"
+    >
       {hidden > 0 && (
         <div className="undo-toast summary-toast">
           <span>还有 {hidden} 个操作可撤销</span>

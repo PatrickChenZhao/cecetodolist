@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   Check,
@@ -12,24 +12,37 @@ import { DynamicComposer } from "@/components/composer/DynamicComposer";
 import { Dashboard } from "@/components/dashboard/Dashboard";
 import { ToastStack } from "@/components/feedback/ToastStack";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { NextStageDueDateDialog } from "@/components/tasks/NextStageDueDateDialog";
 import { TaskDetailPanel } from "@/components/tasks/TaskDetailPanel";
 import { BackupView } from "@/components/views/BackupView";
 import { CompletedView } from "@/components/views/CompletedView";
+import { DeadlineCalendarView } from "@/components/views/DeadlineCalendarView";
 import { RemindersView } from "@/components/views/RemindersView";
 import { useTasks } from "@/context/TaskContext";
 import { downloadQuarantined } from "@/lib/storage/storage";
+import { getCurrentStage, isWorkflowTask } from "@/lib/dates/dateCalculations";
 import type { AppView, ModuleType, TaskItem } from "@/types/tasks";
 
 export function PersonalDeskApp() {
   const tasks = useTasks();
   const [view, setView] = useState<AppView>("today");
   const [composerModule, setComposerModule] = useState<ModuleType>("work");
+  const [composerCollapsed, setComposerCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [pendingStageAdvance, setPendingStageAdvance] = useState<{
+    itemId: string;
+    currentStageName: string;
+    nextStageName: string;
+  } | null>(null);
   const selectedItem = useMemo(
     () => tasks.items.find((item) => item.id === selectedId) ?? null,
     [tasks.items, selectedId],
   );
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = tasks.settings.interfaceTheme;
+  }, [tasks.settings.interfaceTheme]);
 
   const navigate = useCallback((next: AppView) => {
     setView(next);
@@ -45,13 +58,29 @@ export function PersonalDeskApp() {
 
   const focusComposer = useCallback((module: ModuleType) => {
     setComposerModule(module);
+    setComposerCollapsed(false);
     window.setTimeout(() => {
       document.getElementById("composer-title")?.focus();
     }, 80);
   }, []);
 
   const complete = useCallback((item: TaskItem) => {
-    if (item.module === "social" || item.module === "advertising") {
+    if (isWorkflowTask(item)) {
+      if (item.module === "work") {
+        const current = getCurrentStage(item);
+        const currentIndex = item.stages.findIndex(
+          (stage) => stage.id === current?.id,
+        );
+        const nextStage = item.stages[currentIndex + 1];
+        if (current && nextStage) {
+          setPendingStageAdvance({
+            itemId: item.id,
+            currentStageName: current.name,
+            nextStageName: nextStage.name,
+          });
+          return;
+        }
+      }
       tasks.completeStage(item.id);
     } else {
       tasks.completeItem(item.id);
@@ -77,7 +106,11 @@ export function PersonalDeskApp() {
     || view === "personal";
 
   return (
-    <div className="app-root">
+    <div
+      className={`app-root ${
+        showComposer && composerCollapsed ? "composer-collapsed" : ""
+      }`}
+    >
       <Sidebar
         view={view}
         collapsed={tasks.settings.sidebarCollapsed}
@@ -95,7 +128,9 @@ export function PersonalDeskApp() {
       <main
         className={`main-content ${
           tasks.settings.sidebarCollapsed ? "sidebar-is-collapsed" : ""
-        } ${showComposer ? "with-composer" : ""}`}
+        } ${showComposer ? "with-composer" : ""} ${
+          showComposer && composerCollapsed ? "composer-is-collapsed" : ""
+        }`}
       >
         <div className="content-frame">
           {(tasks.warning || tasks.storageError) && (
@@ -160,7 +195,15 @@ export function PersonalDeskApp() {
             <CompletedView
               items={tasks.items}
               onOpen={(item) => setSelectedId(item.id)}
+              onRestore={(item) => tasks.restoreCompletedItem(item.id)}
               onDelete={(item) => tasks.deleteItem(item.id)}
+            />
+          )}
+
+          {view === "deadlineCalendar" && (
+            <DeadlineCalendarView
+              items={tasks.items}
+              onOpen={(item) => setSelectedId(item.id)}
             />
           )}
 
@@ -195,8 +238,10 @@ export function PersonalDeskApp() {
       {showComposer && (
         <DynamicComposer
           module={composerModule}
+          collapsed={composerCollapsed}
           onModuleChange={setComposerModule}
           onCreate={tasks.addItem}
+          onCollapsedChange={setComposerCollapsed}
         />
       )}
 
@@ -211,10 +256,23 @@ export function PersonalDeskApp() {
         />
       )}
 
+      {pendingStageAdvance && (
+        <NextStageDueDateDialog
+          currentStageName={pendingStageAdvance.currentStageName}
+          nextStageName={pendingStageAdvance.nextStageName}
+          onCancel={() => setPendingStageAdvance(null)}
+          onConfirm={(dueDate) => {
+            tasks.completeStage(pendingStageAdvance.itemId, dueDate);
+            setPendingStageAdvance(null);
+          }}
+        />
+      )}
+
       <ToastStack
         actions={tasks.pendingActions}
         onUndo={tasks.undoAction}
         now={tasks.clockNow}
+        avoidComposer={showComposer}
       />
     </div>
   );

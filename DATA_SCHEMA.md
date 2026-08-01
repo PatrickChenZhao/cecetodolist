@@ -75,6 +75,37 @@ interface WorkflowStage {
 
 广告固定五阶段：大纲、脚本、完成拍摄、初稿、发布。
 
+## WorkProcessStage
+
+```ts
+interface WorkProcessStage {
+  id: string;
+  name: string;
+  dueDate: string | null;
+  status: StageStatus;
+  completedAt: string | null;
+}
+```
+
+工作项目流程固定六阶段：Brief、Response、Book Media、IMBA、PCA、Invoice。
+新建时只有 Brief 设置截止日期；进入下一阶段时由用户选择该阶段的截止日期，
+尚未进入的阶段 `dueDate` 为 `null`，不会加入截止日期日历。
+
+## WorkProcessItem
+
+```ts
+interface WorkProcessItem extends BaseItem {
+  module: "work";
+  workType: "process";
+  dueDate: string;
+  currentStageId: string;
+  stages: WorkProcessStage[];
+}
+```
+
+`dueDate` 保留用于兼容已有本地数据；界面、提醒与日历均以当前阶段的
+`WorkProcessStage.dueDate` 为准。
+
 ## WorkflowItem
 
 ```ts
@@ -90,7 +121,7 @@ interface WorkflowItem extends BaseItem {
 ## TaskItem
 
 ```ts
-type TaskItem = WorkItem | PersonalItem | WorkflowItem;
+type TaskItem = WorkItem | WorkProcessItem | PersonalItem | WorkflowItem;
 ```
 
 ## DeskSettings
@@ -98,10 +129,10 @@ type TaskItem = WorkItem | PersonalItem | WorkflowItem;
 ```ts
 interface DeskSettings {
   sidebarCollapsed: boolean;
-  remindersEnabled: boolean;
   browserNotifications: boolean;
-  defaultReminder: "dueDay" | "dayBefore" | "hourBefore" | "none";
-  overdueDaily: boolean;
+  reminderMode: "custom" | "twoHourly" | "morningEvening";
+  customReminderTimes: string[];
+  morningEveningTimes: [string, string];
 }
 ```
 

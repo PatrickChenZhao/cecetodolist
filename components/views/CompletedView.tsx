@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   CheckCircle2,
   ChevronRight,
+  RotateCcw,
   X,
 } from "lucide-react";
 import { isAfter, isSameDay, parseISO, startOfWeek, subDays } from "date-fns";
@@ -25,10 +26,12 @@ function groupName(completedAt: string) {
 export function CompletedView({
   items,
   onOpen,
+  onRestore,
   onDelete,
 }: {
   items: TaskItem[];
   onOpen: (item: TaskItem) => void;
+  onRestore: (item: TaskItem) => void;
   onDelete: (item: TaskItem) => void;
 }) {
   const [filter, setFilter] = useState<Filter>("all");
@@ -90,8 +93,7 @@ export function CompletedView({
               <div className="completed-list">
                 {group.items.map((item) => {
                   const meta = MODULE_META[item.module];
-                  const finalStage = item.module === "social"
-                    || item.module === "advertising"
+                  const finalStage = "stages" in item
                     ? item.stages[item.stages.length - 1]?.name
                     : null;
                   return (
@@ -121,6 +123,17 @@ export function CompletedView({
                         </p>
                       </div>
                       <ChevronRight size={16} className="completed-chevron" />
+                      <button
+                        className="completed-restore"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onRestore(item);
+                        }}
+                        aria-label={`撤销完成${item.title}`}
+                        title="撤销完成"
+                      >
+                        <RotateCcw size={15} />
+                      </button>
                       <button
                         className="completed-delete"
                         onClick={(event) => {
