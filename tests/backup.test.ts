@@ -6,6 +6,7 @@ import {
   parseBackup,
 } from "@/lib/storage/backup";
 import { migrateStoredData } from "@/lib/storage/migrations";
+import { createWorkProcessStages } from "@/lib/dates/dateCalculations";
 import type { WorkItem } from "@/types/tasks";
 
 function work(updatedAt = "2026-07-31T00:00:00.000Z"): WorkItem {
@@ -69,6 +70,44 @@ describe("JSON 备份", () => {
       workType: "event",
       urgency: "urgent",
     });
+  });
+
+  it("旧工作流程的统一截止日期迁移到当前阶段", () => {
+    const stages = createWorkProcessStages().map((stage) => ({
+      id: stage.id,
+      name: stage.name,
+      status: stage.status,
+      completedAt: stage.completedAt,
+    }));
+    const legacyProcess = {
+      id: "legacy-process",
+      module: "work",
+      workType: "process",
+      title: "旧流程",
+      status: "active",
+      dueDate: "2026-08-20",
+      currentStageId: stages[2].id,
+      stages: stages.map((stage, index) => ({
+        ...stage,
+        status: index < 2 ? "completed" : index === 2 ? "active" : "waiting",
+      })),
+      createdAt: "2026-07-30T00:00:00.000Z",
+      updatedAt: "2026-07-31T00:00:00.000Z",
+      completedAt: null,
+    };
+    const backup = {
+      version: "1.0.0",
+      exportedAt: "2026-07-31T02:30:00.000Z",
+      settings: DEFAULT_SETTINGS,
+      pendingActions: [],
+      items: [legacyProcess],
+    };
+
+    const parsed = parseBackup(JSON.stringify(backup));
+    const item = parsed.items[0];
+    expect(item.module === "work" && item.workType === "process"
+      ? item.stages.map((stage) => stage.dueDate)
+      : []).toEqual([null, null, "2026-08-20", null, null, null]);
   });
 
   it("旧设置缺少界面配色时自动使用蓝黑主题", () => {

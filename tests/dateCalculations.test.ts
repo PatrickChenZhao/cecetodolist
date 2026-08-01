@@ -5,11 +5,14 @@ import {
   createWorkflowStages,
   dueDateForPersonal,
   dueDateForWork,
+  displayTaskCardDueDate,
   effectiveStageStatus,
   getItemDueDate,
   recalculateWorkflowDates,
+  reopenCompletedTask,
+  rewindWorkflowToStage,
 } from "@/lib/dates/dateCalculations";
-import type { WorkProcessItem, WorkflowItem } from "@/types/tasks";
+import type { WorkItem, WorkProcessItem, WorkflowItem } from "@/types/tasks";
 
 const referenceDate = new Date(2026, 6, 31, 12, 0, 0);
 
@@ -26,11 +29,18 @@ describe("紧急程度日期", () => {
     expect(dueDateForPersonal("month", referenceDate)).toBe("2026-07-31");
     expect(dueDateForPersonal("notUrgent", referenceDate)).toBeNull();
   });
+
+  it("任务卡当天显示今天，其他日期显示 Due M/D", () => {
+    expect(displayTaskCardDueDate("2026-07-31", referenceDate)).toBe("今天");
+    expect(displayTaskCardDueDate("2026-08-01", referenceDate)).toBe("Due 8/1");
+    expect(displayTaskCardDueDate("2026-12-09", referenceDate)).toBe("Due 12/9");
+    expect(displayTaskCardDueDate(null, referenceDate)).toBe("无截止日期");
+  });
 });
 
 describe("阶段日期计算", () => {
-  it("工作流程固定生成六个无阶段截止时间的节点", () => {
-    const stages = createWorkProcessStages();
+  it("工作流程只给 Brief 设置初始截止日期", () => {
+    const stages = createWorkProcessStages("2026-08-20");
     expect(stages.map((stage) => stage.name)).toEqual([
       "Brief",
       "Response",
@@ -39,7 +49,14 @@ describe("阶段日期计算", () => {
       "PCA",
       "Invoice",
     ]);
-    expect(stages.every((stage) => !("dueDate" in stage))).toBe(true);
+    expect(stages.map((stage) => stage.dueDate)).toEqual([
+      "2026-08-20",
+      null,
+      null,
+      null,
+      null,
+      null,
+    ]);
   });
 
   it("按 7、5、3 天生成自媒体流程", () => {
@@ -129,6 +146,29 @@ describe("阶段推进", () => {
     expect(next.currentStageId).toBe(next.stages[1].id);
   });
 
+  it("可将任意流程阶段恢复为当前未完成阶段", () => {
+    let item = workflow();
+    item = advanceWorkflow(item, item.stages[0].id, referenceDate);
+    item = advanceWorkflow(item, item.stages[1].id, referenceDate);
+
+    const rewound = rewindWorkflowToStage(
+      item,
+      item.stages[0].id,
+      new Date(2026, 7, 1, 12, 0, 0),
+    );
+
+    expect(rewound.status).toBe("active");
+    expect(rewound.completedAt).toBeNull();
+    expect(rewound.currentStageId).toBe(rewound.stages[0].id);
+    expect(rewound.stages.map((stage) => stage.status)).toEqual([
+      "active",
+      "waiting",
+      "waiting",
+      "waiting",
+    ]);
+    expect(rewound.stages.every((stage) => stage.completedAt === null)).toBe(true);
+  });
+
   it("最后阶段完成后整个项目完成", () => {
     let item = workflow();
     for (let index = 0; index < item.stages.length; index += 1) {
@@ -142,8 +182,47 @@ describe("阶段推进", () => {
     expect(item.completedAt).not.toBeNull();
   });
 
-  it("工作流程使用统一任务截止日期并可逐阶段推进", () => {
-    const stages = createWorkProcessStages();
+  it("撤销已完成流程时重新打开最后阶段", () => {
+    let item = workflow();
+    for (let index = 0; index < item.stages.length; index += 1) {
+      item = advanceWorkflow(
+        item,
+        item.currentStageId,
+        new Date(2026, 7, index + 1),
+      );
+    }
+
+    const reopened = reopenCompletedTask(item, referenceDate);
+    const finalStage = reopened.stages[reopened.stages.length - 1];
+    expect(reopened.status).toBe("active");
+    expect(reopened.completedAt).toBeNull();
+    expect(reopened.currentStageId).toBe(finalStage.id);
+    expect(finalStage.status).toBe("active");
+    expect(finalStage.completedAt).toBeNull();
+    expect(reopened.stages[reopened.stages.length - 2].status).toBe("completed");
+  });
+
+  it("撤销普通已完成事项时恢复未完成状态", () => {
+    const item: WorkItem = {
+      id: "work-event-1",
+      module: "work",
+      workType: "event",
+      title: "确认付款",
+      status: "completed",
+      urgency: "week",
+      dueDate: "2026-08-02",
+      createdAt: "2026-07-31T00:00:00.000Z",
+      updatedAt: "2026-08-01T00:00:00.000Z",
+      completedAt: "2026-08-01T00:00:00.000Z",
+    };
+
+    const reopened = reopenCompletedTask(item, referenceDate);
+    expect(reopened.status).toBe("active");
+    expect(reopened.completedAt).toBeNull();
+  });
+
+  it("工作流程选择下一阶段截止日期后才推进", () => {
+    const stages = createWorkProcessStages("2026-08-20");
     const item: WorkProcessItem = {
       id: "work-process-1",
       module: "work",
@@ -159,9 +238,20 @@ describe("阶段推进", () => {
     };
 
     expect(getItemDueDate(item)).toBe("2026-08-20");
-    const next = advanceWorkflow(item, item.currentStageId, referenceDate);
+    const unchanged = advanceWorkflow(item, item.currentStageId, referenceDate);
+    expect(unchanged).toBe(item);
+
+    const next = advanceWorkflow(
+      item,
+      item.currentStageId,
+      referenceDate,
+      "2026-08-25",
+    );
     expect(next.stages[0].status).toBe("completed");
     expect(next.stages[1].status).toBe("active");
+    expect(next.stages[1].dueDate).toBe("2026-08-25");
+    expect(next.stages.slice(2).every((stage) => stage.dueDate === null)).toBe(true);
+    expect(getItemDueDate(next)).toBe("2026-08-25");
     expect(next.currentStageId).toBe(next.stages[1].id);
   });
 });

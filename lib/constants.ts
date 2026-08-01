@@ -15,10 +15,10 @@ export const DEFAULT_SETTINGS: DeskSettings = {
   dashboardTitle: DEFAULT_DASHBOARD_TITLE,
   interfaceTheme: "blueBlack",
   sidebarCollapsed: false,
-  remindersEnabled: true,
   browserNotifications: false,
-  defaultReminder: "dueDay",
-  overdueDaily: true,
+  reminderMode: "morningEvening",
+  customReminderTimes: ["09:00"],
+  morningEveningTimes: ["10:30", "16:30"],
 };
 
 export const MODULE_ORDER: ModuleType[] = [

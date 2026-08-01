@@ -13,10 +13,13 @@ import { DEFAULT_SETTINGS } from "@/lib/constants";
 import {
   advanceWorkflow,
   getCurrentStage,
-  isDueForAttention,
+  isDueWithinNextDays,
   isWorkflowTask,
+  reopenCompletedTask,
   todayKey,
 } from "@/lib/dates/dateCalculations";
+import { sortTasks } from "@/lib/dates/sorting";
+import { getLatestReminderSlot } from "@/lib/reminders/reminderSchedule";
 import { mergeItems } from "@/lib/storage/backup";
 import {
   loadNotificationHistory,
@@ -56,6 +59,7 @@ type Action =
     }
   | { type: "add"; item: TaskItem }
   | { type: "update"; item: TaskItem }
+  | { type: "restoreCompleted"; item: TaskItem }
   | { type: "apply"; item: TaskItem; pending: PendingAction }
   | { type: "remove"; itemId: string; pending: PendingAction }
   | { type: "undo"; actionId: string }
@@ -108,6 +112,14 @@ function reducer(state: DeskState, action: Action): DeskState {
           item.id === action.item.id ? action.item : item
         ),
         notice: "修改已保存",
+      };
+    case "restoreCompleted":
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.item.id ? action.item : item
+        ),
+        notice: `已撤销完成“${action.item.title}”`,
       };
     case "apply":
       return {
@@ -186,7 +198,8 @@ interface TaskContextValue extends DeskState {
   addItem: (item: TaskItem) => void;
   updateItem: (item: TaskItem) => void;
   completeItem: (itemId: string) => void;
-  completeStage: (itemId: string) => void;
+  completeStage: (itemId: string, nextStageDueDate?: string) => void;
+  restoreCompletedItem: (itemId: string) => void;
   deleteItem: (itemId: string) => void;
   undoAction: (actionId: string) => void;
   updateSettings: (patch: Partial<DeskSettings>) => void;
@@ -239,7 +252,6 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (
       !state.hydrated
-      || !state.settings.remindersEnabled
       || !state.settings.browserNotifications
       || typeof Notification === "undefined"
       || Notification.permission !== "granted"
@@ -247,29 +259,40 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const dueItems = state.items.filter((item) => isDueForAttention(item));
-    if (dueItems.length === 0) return;
-    const dayKey = todayKey();
-    const history = loadNotificationHistory();
-    const unseen = dueItems.filter((item) => history[item.id] !== dayKey);
-    if (unseen.length === 0) return;
+    function checkScheduledReminder() {
+      const now = new Date();
+      const slot = getLatestReminderSlot(state.settings, now);
+      if (!slot) return;
 
-    const first = unseen[0];
-    const extra = unseen.length - 1;
-    new Notification("Personal Desk", {
-      body: extra > 0
-        ? `${first.title}，另有 ${extra} 个事项需要关注。`
-        : `${first.title} 今天需要处理。`,
-    });
-    unseen.forEach((item) => {
-      history[item.id] = dayKey;
-    });
-    saveNotificationHistory(history);
+      const dayKey = todayKey(now);
+      const historyKey = `scheduled:${dayKey}:${slot}`;
+      const history = loadNotificationHistory();
+      if (history[historyKey] === dayKey) return;
+
+      const dueItems = sortTasks(
+        state.items.filter((item) => isDueWithinNextDays(item, 3, now)),
+        now,
+      );
+      if (dueItems.length === 0) return;
+
+      const first = dueItems[0];
+      const extra = dueItems.length - 1;
+      new Notification("Personal Desk", {
+        body: extra > 0
+          ? `${first.title}，另有 ${extra} 个事项将在近三天内截止。`
+          : `${first.title} 将在近三天内截止。`,
+      });
+      history[historyKey] = dayKey;
+      saveNotificationHistory(history);
+    }
+
+    checkScheduledReminder();
+    const timer = window.setInterval(checkScheduledReminder, 30_000);
+    return () => window.clearInterval(timer);
   }, [
     state.hydrated,
     state.items,
-    state.settings.browserNotifications,
-    state.settings.remindersEnabled,
+    state.settings,
   ]);
 
   useEffect(() => {
@@ -314,7 +337,10 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const completeStage = useCallback((itemId: string) => {
+  const completeStage = useCallback((
+    itemId: string,
+    nextStageDueDate?: string,
+  ) => {
     const item = stateRef.current.items.find(
       (entry): entry is AnyWorkflowItem =>
         entry.id === itemId && isWorkflowTask(entry),
@@ -323,7 +349,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     const current = getCurrentStage(item);
     if (!current || current.status === "waiting") return;
     const now = new Date();
-    const advanced = advanceWorkflow(item, current.id, now);
+    const advanced = advanceWorkflow(item, current.id, now, nextStageDueDate);
+    if (advanced === item) return;
     const final = advanced.status === "completed";
     dispatch({
       type: "apply",
@@ -355,6 +382,15 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const restoreCompletedItem = useCallback((itemId: string) => {
+    const item = stateRef.current.items.find((entry) => entry.id === itemId);
+    if (!item || item.status !== "completed") return;
+    dispatch({
+      type: "restoreCompleted",
+      item: reopenCompletedTask(item),
+    });
+  }, []);
+
   const undoAction = useCallback((actionId: string) => {
     dispatch({ type: "undo", actionId });
   }, []);
@@ -379,6 +415,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     updateItem,
     completeItem,
     completeStage,
+    restoreCompletedItem,
     deleteItem,
     undoAction,
     updateSettings,
@@ -391,6 +428,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     updateItem,
     completeItem,
     completeStage,
+    restoreCompletedItem,
     deleteItem,
     undoAction,
     updateSettings,

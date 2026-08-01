@@ -8,6 +8,7 @@ import {
   ChevronDown,
   Leaf,
   Megaphone,
+  Plus,
   Video,
 } from "lucide-react";
 import {
@@ -40,8 +41,10 @@ const icons = {
 
 interface DynamicComposerProps {
   module: ModuleType;
+  collapsed: boolean;
   onModuleChange: (module: ModuleType) => void;
   onCreate: (item: TaskItem) => void;
+  onCollapsedChange: (collapsed: boolean) => void;
 }
 
 function baseItem(module: ModuleType, title: string) {
@@ -100,8 +103,10 @@ function WorkflowDates({
 
 export function DynamicComposer({
   module,
+  collapsed,
   onModuleChange,
   onCreate,
+  onCollapsedChange,
 }: DynamicComposerProps) {
   const [workTitle, setWorkTitle] = useState("");
   const [workType, setWorkType] = useState<"process" | "event">("event");
@@ -138,7 +143,7 @@ export function DynamicComposer({
 
     if (module === "work") {
       if (workType === "process") {
-        const stages = createWorkProcessStages();
+        const stages = createWorkProcessStages(workProcessDueDate);
         const item: WorkProcessItem = {
           ...baseItem("work", workTitle),
           module: "work",
@@ -227,14 +232,20 @@ export function DynamicComposer({
   );
 
   return (
-    <div className="composer-dock">
-      <section
-        className="dynamic-composer"
-        style={{
-          "--module-color": meta.color,
-          "--module-soft": meta.soft,
-        } as React.CSSProperties}
-      >
+    <div className="composer-dock" data-collapsed={collapsed}>
+      <div className="composer-stack">
+        <div
+          className="composer-expanded-shell"
+          aria-hidden={collapsed}
+          inert={collapsed ? true : undefined}
+        >
+          <section
+            className="dynamic-composer"
+            style={{
+              "--module-color": meta.color,
+              "--module-soft": meta.soft,
+            } as React.CSSProperties}
+          >
         <div className="composer-topline">
           <div className="composer-source-controls">
             <label className="module-select">
@@ -274,9 +285,14 @@ export function DynamicComposer({
               </div>
             )}
           </div>
-          <span className="composer-hint">
-            <CalendarDays size={13} /> 日期自动按本地时间保存
-          </span>
+          <button
+            className="composer-collapse-button"
+            onClick={() => onCollapsedChange(true)}
+            aria-label="收起输入框"
+            title="收起输入框"
+          >
+            <ChevronDown size={17} />
+          </button>
         </div>
 
         <div className="composer-title-input">{input}</div>
@@ -305,7 +321,7 @@ export function DynamicComposer({
         {module === "work" && workType === "process" && (
           <div className="work-process-options">
             <label className="date-field work-process-due-date">
-              <span>任务截止时间</span>
+              <span>Brief 截止日期</span>
               <input
                 type="date"
                 required
@@ -352,21 +368,38 @@ export function DynamicComposer({
         )}
 
         <div className="composer-actions">
-          <span>Enter 创建 · Shift + Enter 换行</span>
-          <button
-            className="create-button"
-            onClick={submit}
-            disabled={
-              !title.trim()
-              || (module === "work"
-                && workType === "process"
-                && !workProcessDueDate)
-            }
-          >
-            创建 <ArrowUp size={15} />
-          </button>
+          <span className="composer-shortcut">Enter 创建 · Shift + Enter 换行</span>
+          <div className="composer-primary-actions">
+            <span className="composer-hint">
+              <CalendarDays size={13} /> 日期自动按本地时间保存
+            </span>
+            <button
+              className="create-button"
+              onClick={submit}
+              disabled={
+                !title.trim()
+                || (module === "work"
+                  && workType === "process"
+                  && !workProcessDueDate)
+              }
+            >
+              创建 <ArrowUp size={15} />
+            </button>
+          </div>
         </div>
-      </section>
+          </section>
+        </div>
+        <button
+          className="composer-collapsed-bar"
+          onClick={() => onCollapsedChange(false)}
+          aria-label="展开输入框"
+          title="展开输入框"
+          aria-hidden={!collapsed}
+          tabIndex={collapsed ? 0 : -1}
+        >
+          <Plus size={24} strokeWidth={1.8} />
+        </button>
+      </div>
     </div>
   );
 }

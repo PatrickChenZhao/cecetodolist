@@ -11,7 +11,7 @@ import {
   WORK_PROCESS_STAGE_SHORT_LABELS,
 } from "@/lib/constants";
 import {
-  displayDueDate,
+  displayTaskCardDueDate,
   effectiveStageStatus,
   getCurrentStage,
   getItemDueDate,
@@ -98,7 +98,7 @@ export function TaskCard({ item, onOpen, onComplete }: TaskCardProps) {
               完成当前阶段
             </button>
             <span className="workflow-due-date">
-              <Clock3 size={12} /> 截止 {displayDueDate(dueDate)}
+              <Clock3 size={12} /> {displayTaskCardDueDate(dueDate)}
             </span>
           </div>
         ) : event ? (
@@ -140,7 +140,7 @@ export function TaskCard({ item, onOpen, onComplete }: TaskCardProps) {
       ) : (
         <>
           <div className="task-meta-row">
-            <span><Clock3 size={12} /> {displayDueDate(dueDate)}</span>
+            <span><Clock3 size={12} /> {displayTaskCardDueDate(dueDate)}</span>
           </div>
           {overdue && dueDate && (
             <p className="overdue-label">已超时 {overdueDays(dueDate)} 天</p>

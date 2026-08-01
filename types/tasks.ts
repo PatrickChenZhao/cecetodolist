@@ -4,6 +4,7 @@ export type StageStatus = "waiting" | "active" | "overdue" | "completed";
 export type DateSource = "automatic" | "manual";
 export type EventUrgency = "urgent" | "week" | "month" | "notUrgent";
 export type InterfaceTheme = "blueBlack" | "bright";
+export type ReminderMode = "custom" | "twoHourly" | "morningEvening";
 
 export interface BaseItem {
   id: string;
@@ -25,6 +26,7 @@ export interface WorkItem extends BaseItem {
 export interface WorkProcessStage {
   id: string;
   name: string;
+  dueDate: string | null;
   status: StageStatus;
   completedAt: string | null;
 }
@@ -66,10 +68,10 @@ export interface DeskSettings {
   dashboardTitle: string;
   interfaceTheme: InterfaceTheme;
   sidebarCollapsed: boolean;
-  remindersEnabled: boolean;
   browserNotifications: boolean;
-  defaultReminder: "dueDay" | "dayBefore" | "hourBefore" | "none";
-  overdueDaily: boolean;
+  reminderMode: ReminderMode;
+  customReminderTimes: string[];
+  morningEveningTimes: [string, string];
 }
 
 export type PendingActionType = "complete" | "stage" | "delete";
@@ -97,6 +99,7 @@ export interface BackupPayload extends StoredData {
 
 export type AppView =
   | "today"
+  | "deadlineCalendar"
   | ModuleType
   | "reminders"
   | "completed"

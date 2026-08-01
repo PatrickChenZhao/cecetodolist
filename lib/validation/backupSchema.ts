@@ -64,18 +64,40 @@ const stageSchema = z.object({
 const workProcessStageSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
+  dueDate: dateKey.nullable(),
   status: z.enum(["waiting", "active", "overdue", "completed"]),
   completedAt: nullableIsoDate,
 });
 
-const workProcessItemSchema = z.object({
+const workProcessItemSchema = z.preprocess((value) => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  const item = value as Record<string, unknown>;
+  if (!Array.isArray(item.stages)) return value;
+  return {
+    ...item,
+    stages: item.stages.map((stage) => {
+      if (!stage || typeof stage !== "object" || Array.isArray(stage)) {
+        return stage;
+      }
+      const stageRecord = stage as Record<string, unknown>;
+      return {
+        ...stageRecord,
+        dueDate: "dueDate" in stageRecord
+          ? stageRecord.dueDate
+          : stageRecord.id === item.currentStageId
+            ? item.dueDate
+            : null,
+      };
+    }),
+  };
+}, z.object({
   ...base,
   module: z.literal("work"),
   workType: z.literal("process"),
   dueDate: dateKey,
   currentStageId: z.string().min(1),
   stages: z.array(workProcessStageSchema),
-}).superRefine((item, context) => {
+})).superRefine((item, context) => {
   if (item.stages.length !== WORK_PROCESS_STAGE_NAMES.length) {
     context.addIssue({
       code: "custom",
@@ -125,14 +147,22 @@ export const taskItemSchema = z.union([
   workflowItemSchema,
 ]);
 
+const reminderTime = z.string().regex(
+  /^([01]\d|2[0-3]):[0-5]\d$/,
+  "提醒时间格式不正确",
+);
+
 export const settingsSchema = z.object({
   dashboardTitle: z.string().trim().min(1).max(50).default("你好 Cecilia"),
   interfaceTheme: z.enum(["blueBlack", "bright"]).default("blueBlack"),
-  sidebarCollapsed: z.boolean(),
-  remindersEnabled: z.boolean(),
-  browserNotifications: z.boolean(),
-  defaultReminder: z.enum(["dueDay", "dayBefore", "hourBefore", "none"]),
-  overdueDaily: z.boolean(),
+  sidebarCollapsed: z.boolean().default(false),
+  browserNotifications: z.boolean().default(false),
+  reminderMode: z.enum(["custom", "twoHourly", "morningEvening"])
+    .default("morningEvening"),
+  customReminderTimes: z.array(reminderTime).min(1).max(6)
+    .default(["09:00"]),
+  morningEveningTimes: z.tuple([reminderTime, reminderTime])
+    .default(["10:30", "16:30"]),
 });
 
 export const pendingActionSchema = z.object({

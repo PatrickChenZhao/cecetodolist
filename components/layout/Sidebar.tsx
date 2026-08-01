@@ -3,6 +3,7 @@
 import {
   Bell,
   BriefcaseBusiness,
+  CalendarRange,
   CalendarDays,
   CheckCircle2,
   ChevronLeft,
@@ -18,6 +19,7 @@ import type { AppView } from "@/types/tasks";
 
 const navigation = [
   { id: "today" as const, label: "今日", icon: CalendarDays },
+  { id: "deadlineCalendar" as const, label: "Deadline 日历", icon: CalendarRange },
   { id: "work" as const, label: MODULE_META.work.label, icon: BriefcaseBusiness },
   { id: "social" as const, label: MODULE_META.social.label, icon: Video },
   {
@@ -72,7 +74,7 @@ export function Sidebar({
       <nav className="sidebar-nav" aria-label="主要导航">
         {navigation.map((item, index) => {
           const Icon = item.icon;
-          const separator = index === 1 || index === 5;
+          const separator = index === 2 || index === 6;
           return (
             <div key={item.id} className={separator ? "nav-group-start" : ""}>
               <button

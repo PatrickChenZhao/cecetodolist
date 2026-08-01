@@ -5,6 +5,7 @@ import {
   Check,
   CheckCircle2,
   Clock3,
+  RotateCcw,
   Trash2,
   X,
 } from "lucide-react";
@@ -19,6 +20,7 @@ import {
   getCurrentStage,
   isWorkflowTask,
   recalculateWorkflowDates,
+  rewindWorkflowToStage,
   todayKey,
 } from "@/lib/dates/dateCalculations";
 import type {
@@ -52,12 +54,19 @@ export function TaskDetailPanel({
     : null;
   const eventItem = item.module === "personal" ? item : workEvent;
   const workflow = isWorkflowTask(item) ? item : null;
+  const initialWorkProcessStage = workProcess
+    ? getCurrentStage(workProcess)
+    : null;
   const [title, setTitle] = useState(item.title);
   const [eventUrgency, setEventUrgency] = useState<EventUrgency>(
     eventItem?.urgency ?? "week",
   );
   const [dueDate, setDueDate] = useState<string | null>(
-    "dueDate" in item ? item.dueDate : null,
+    workProcess
+      ? initialWorkProcessStage?.dueDate ?? null
+      : "dueDate" in item
+        ? item.dueDate
+        : null,
   );
   const [stages, setStages] = useState<AnyWorkflowStage[]>(
     workflow
@@ -89,11 +98,16 @@ export function TaskDetailPanel({
         dueDate,
       });
     } else if (workProcess) {
+      const nextStages = stages.map((stage) =>
+        stage.id === workProcess.currentStageId
+          ? { ...stage, dueDate }
+          : stage
+      ) as WorkProcessStage[];
       onSave({
         ...workProcess,
         title: title.trim(),
         dueDate: dueDate ?? todayKey(),
-        stages: stages as WorkProcessStage[],
+        stages: nextStages,
       });
     } else if (item.module === "personal") {
       onSave({
@@ -109,6 +123,29 @@ export function TaskDetailPanel({
         stages: stages as WorkflowStage[],
       });
     }
+  }
+
+  function returnStageToIncomplete(stageId: string) {
+    if (!workflow) return;
+
+    const draft = workProcess
+      ? {
+          ...workProcess,
+          title: title.trim() || workProcess.title,
+          dueDate: dueDate ?? todayKey(),
+          stages: stages as WorkProcessStage[],
+        }
+      : {
+          ...workflow,
+          title: title.trim() || workflow.title,
+          stages: stages as WorkflowStage[],
+        };
+    const rewound = rewindWorkflowToStage(draft, stageId);
+    setStages(rewound.stages.map((stage) => ({ ...stage })));
+    if (rewound.module === "work") {
+      setDueDate(getCurrentStage(rewound)?.dueDate ?? null);
+    }
+    onSave(rewound);
   }
 
   return (
@@ -183,7 +220,7 @@ export function TaskDetailPanel({
 
           {workProcess && (
             <label className="detail-field">
-              <span>任务截止日期</span>
+              <span>当前阶段截止日期</span>
               <input
                 type="date"
                 value={dueDate ?? ""}
@@ -227,7 +264,7 @@ export function TaskDetailPanel({
                         <strong>{stage.name}</strong>
                         {isCurrent && <small>当前阶段</small>}
                       </div>
-                      {workflow.module !== "work" && "dueDate" in stage && (
+                      {workflow.module !== "work" && "dateSource" in stage && (
                         <label>
                           截止
                           <input
@@ -259,6 +296,15 @@ export function TaskDetailPanel({
                         </p>
                       )}
                     </div>
+                    <button
+                      className="detail-stage-rewind"
+                      type="button"
+                      onClick={() => returnStageToIncomplete(stage.id)}
+                      aria-label={`${stage.name}回到未完成状态`}
+                    >
+                      <RotateCcw size={11} />
+                      回到未完成状态
+                    </button>
                   </div>
                 );
               })}
