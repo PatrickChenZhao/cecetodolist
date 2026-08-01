@@ -88,6 +88,10 @@ const initialState: DeskState = {
   clockNow: 0,
 };
 
+function stateText(state: DeskState, chinese: string, english: string) {
+  return state.settings.language === "en" ? english : chinese;
+}
+
 function reducer(state: DeskState, action: Action): DeskState {
   switch (action.type) {
     case "hydrate":
@@ -103,7 +107,7 @@ function reducer(state: DeskState, action: Action): DeskState {
       return {
         ...state,
         items: [...state.items, action.item],
-        notice: "已创建并自动保存",
+        notice: stateText(state, "已创建并自动保存", "Created and autosaved"),
       };
     case "update":
       return {
@@ -111,7 +115,7 @@ function reducer(state: DeskState, action: Action): DeskState {
         items: state.items.map((item) =>
           item.id === action.item.id ? action.item : item
         ),
-        notice: "修改已保存",
+        notice: stateText(state, "修改已保存", "Changes saved"),
       };
     case "restoreCompleted":
       return {
@@ -119,7 +123,7 @@ function reducer(state: DeskState, action: Action): DeskState {
         items: state.items.map((item) =>
           item.id === action.item.id ? action.item : item
         ),
-        notice: `已撤销完成“${action.item.title}”`,
+        notice: stateText(state, `已撤销完成“${action.item.title}”`, `Restored “${action.item.title}”`),
       };
     case "apply":
       return {
@@ -146,7 +150,7 @@ function reducer(state: DeskState, action: Action): DeskState {
         pendingActions: state.pendingActions.filter(
           (entry) => entry.id !== action.actionId,
         ),
-        notice: "已恢复",
+        notice: stateText(state, "已恢复", "Restored"),
       };
     }
     case "purge":
@@ -158,7 +162,11 @@ function reducer(state: DeskState, action: Action): DeskState {
         ),
       };
     case "settings":
-      return { ...state, settings: action.settings, notice: "设置已保存" };
+      return {
+        ...state,
+        settings: action.settings,
+        notice: action.settings.language === "en" ? "Settings saved" : "设置已保存",
+      };
     case "import":
       return {
         ...state,
@@ -179,7 +187,11 @@ function reducer(state: DeskState, action: Action): DeskState {
               ),
               ...action.payload.pendingActions,
             ],
-        notice: "数据导入成功",
+        notice: (action.mode === "replace"
+          ? action.payload.settings.language
+          : state.settings.language) === "en"
+          ? "Data imported successfully"
+          : "数据导入成功",
       };
     case "saved":
       return { ...state, lastSavedAt: action.at, storageError: null };
@@ -234,7 +246,9 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     } catch {
       dispatch({
         type: "storageError",
-        message: "浏览器存储空间不足，最近的修改可能尚未保存。",
+        message: state.settings.language === "en"
+          ? "Browser storage is full. Recent changes may not have been saved."
+          : "浏览器存储空间不足，最近的修改可能尚未保存。",
       });
     }
     // lastSavedAt intentionally excluded to avoid a persistence loop.
@@ -278,9 +292,13 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       const first = dueItems[0];
       const extra = dueItems.length - 1;
       new Notification("Personal Desk", {
-        body: extra > 0
-          ? `${first.title}，另有 ${extra} 个事项将在近三天内截止。`
-          : `${first.title} 将在近三天内截止。`,
+        body: state.settings.language === "en"
+          ? extra > 0
+            ? `${first.title}, plus ${extra} more items, are due in the next three days.`
+            : `${first.title} is due in the next three days.`
+          : extra > 0
+            ? `${first.title}，另有 ${extra} 个事项将在近三天内截止。`
+            : `${first.title} 将在近三天内截止。`,
       });
       history[historyKey] = dayKey;
       saveNotificationHistory(history);
@@ -331,7 +349,9 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       pending: createPendingAction(
         "complete",
         item,
-        `已完成“${item.title}”`,
+        stateRef.current.settings.language === "en"
+          ? `Completed “${item.title}”`
+          : `已完成“${item.title}”`,
         now,
       ),
     });
@@ -358,9 +378,13 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       pending: createPendingAction(
         final ? "complete" : "stage",
         item,
-        final
-          ? `已完成“${item.title}”`
-          : `已完成“${current.name}”阶段`,
+        stateRef.current.settings.language === "en"
+          ? final
+            ? `Completed “${item.title}”`
+            : `Completed the “${current.name}” stage`
+          : final
+            ? `已完成“${item.title}”`
+            : `已完成“${current.name}”阶段`,
         now,
       ),
     });
@@ -376,7 +400,9 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       pending: createPendingAction(
         "delete",
         item,
-        `已删除“${item.title}”`,
+        stateRef.current.settings.language === "en"
+          ? `Deleted “${item.title}”`
+          : `已删除“${item.title}”`,
         now,
       ),
     });

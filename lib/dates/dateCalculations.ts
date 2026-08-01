@@ -8,7 +8,7 @@ import {
   parseISO,
   startOfDay,
 } from "date-fns";
-import { zhCN } from "date-fns/locale";
+import { enUS, zhCN } from "date-fns/locale";
 import {
   AD_STAGE_NAMES,
   SOCIAL_STAGE_NAMES,
@@ -22,6 +22,7 @@ import type {
   WorkProcessStage,
   WorkflowItem,
   WorkflowStage,
+  InterfaceLanguage,
 } from "@/types/tasks";
 
 const SOCIAL_OFFSETS = [7, 5, 3];
@@ -31,8 +32,10 @@ export function todayKey(now = new Date()) {
   return format(now, "yyyy-MM-dd");
 }
 
-export function localDateLabel(now = new Date()) {
-  return format(now, "yyyy年M月d日，EEEE", { locale: zhCN });
+export function localDateLabel(now = new Date(), language: InterfaceLanguage = "zh-CN") {
+  return language === "en"
+    ? format(now, "EEEE, MMMM d, yyyy", { locale: enUS })
+    : format(now, "yyyy年M月d日，EEEE", { locale: zhCN });
 }
 
 export function dueDateForWork(
@@ -162,23 +165,27 @@ export function overdueDays(date: string, now = new Date()) {
   );
 }
 
-export function displayDueDate(date: string | null, now = new Date()) {
-  if (!date) return "无截止日期";
-  if (isSameDay(parseISO(date), now)) return "今天";
-  return format(parseISO(date), "M月d日");
+export function displayDueDate(date: string | null, now = new Date(), language: InterfaceLanguage = "zh-CN") {
+  if (!date) return language === "en" ? "No due date" : "无截止日期";
+  if (isSameDay(parseISO(date), now)) return language === "en" ? "Today" : "今天";
+  return language === "en"
+    ? format(parseISO(date), "MMM d", { locale: enUS })
+    : format(parseISO(date), "M月d日");
 }
 
-export function displayTaskCardDueDate(date: string | null, now = new Date()) {
-  if (!date) return "无截止日期";
-  if (isSameDay(parseISO(date), now)) return "今天";
+export function displayTaskCardDueDate(date: string | null, now = new Date(), language: InterfaceLanguage = "zh-CN") {
+  if (!date) return language === "en" ? "No due date" : "无截止日期";
+  if (isSameDay(parseISO(date), now)) return language === "en" ? "Today" : "今天";
   return `Due ${format(parseISO(date), "M/d")}`;
 }
 
-export function displayCompletedAt(value: string, now = new Date()) {
+export function displayCompletedAt(value: string, now = new Date(), language: InterfaceLanguage = "zh-CN") {
   const date = parseISO(value);
-  if (isSameDay(date, now)) return `今天 ${format(date, "HH:mm")}`;
-  if (isSameDay(date, addDays(now, -1))) return `昨天 ${format(date, "HH:mm")}`;
-  return format(date, "M月d日 HH:mm");
+  if (isSameDay(date, now)) return `${language === "en" ? "Today" : "今天"} ${format(date, "HH:mm")}`;
+  if (isSameDay(date, addDays(now, -1))) return `${language === "en" ? "Yesterday" : "昨天"} ${format(date, "HH:mm")}`;
+  return language === "en"
+    ? format(date, "MMM d, HH:mm", { locale: enUS })
+    : format(date, "M月d日 HH:mm");
 }
 
 export function effectiveStageStatus(

@@ -3,6 +3,8 @@
 import { CalendarDays, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { todayKey } from "@/lib/dates/dateCalculations";
+import { useLanguage } from "@/context/LanguageContext";
+import { stageLabel } from "@/lib/i18n";
 
 interface NextStageDueDateDialogProps {
   currentStageName: string;
@@ -17,6 +19,9 @@ export function NextStageDueDateDialog({
   onCancel,
   onConfirm,
 }: NextStageDueDateDialogProps) {
+  const { language, tr } = useLanguage();
+  const currentLabel = stageLabel(currentStageName, language);
+  const nextLabel = stageLabel(nextStageName, language);
   const [dueDate, setDueDate] = useState(todayKey());
 
   useEffect(() => {
@@ -32,21 +37,21 @@ export function NextStageDueDateDialog({
       <button
         className="next-stage-date-backdrop"
         onClick={onCancel}
-        aria-label="关闭截止日期选择"
+        aria-label={tr("关闭截止日期选择", "Close due date selection")}
       />
       <section className="next-stage-date-dialog">
         <header>
           <span className="next-stage-date-icon"><CalendarDays size={17} /></span>
           <div>
-            <small>已准备完成 {currentStageName}</small>
-            <h2>设置 {nextStageName} 的截止日期</h2>
+            <small>{tr(`已准备完成 ${currentStageName}`, `Ready to complete ${currentLabel}`)}</small>
+            <h2>{tr(`设置 ${nextStageName} 的截止日期`, `Set a due date for ${nextLabel}`)}</h2>
           </div>
-          <button className="icon-button" onClick={onCancel} aria-label="关闭">
+          <button className="icon-button" onClick={onCancel} aria-label={tr("关闭", "Close")}>
             <X size={17} />
           </button>
         </header>
         <label>
-          <span>截止日期</span>
+          <span>{tr("截止日期", "Due Date")}</span>
           <input
             type="date"
             required
@@ -55,15 +60,15 @@ export function NextStageDueDateDialog({
             onChange={(event) => setDueDate(event.target.value)}
           />
         </label>
-        <p>确认后，{nextStageName} 将成为当前阶段并加入截止日期日历。</p>
+        <p>{tr(`确认后，${nextStageName} 将成为当前阶段并加入截止日期日历。`, `After confirmation, ${nextLabel} becomes the current stage and is added to the deadline calendar.`)}</p>
         <footer>
-          <button className="secondary-button" onClick={onCancel}>取消</button>
+          <button className="secondary-button" onClick={onCancel}>{tr("取消", "Cancel")}</button>
           <button
             className="primary-button"
             disabled={!dueDate}
             onClick={() => onConfirm(dueDate)}
           >
-            确认并进入 {nextStageName}
+            {tr(`确认并进入 ${nextStageName}`, `Confirm and Start ${nextLabel}`)}
           </button>
         </footer>
       </section>

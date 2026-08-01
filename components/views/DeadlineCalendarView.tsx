@@ -19,8 +19,7 @@ import {
   startOfMonth,
   subMonths,
 } from "date-fns";
-import { zhCN } from "date-fns/locale";
-import { MODULE_META } from "@/lib/constants";
+import { enUS, zhCN } from "date-fns/locale";
 import {
   calendarMonthDays,
   collectDeadlineEntries,
@@ -28,20 +27,22 @@ import {
   type DeadlineEntry,
 } from "@/lib/dates/deadlineCalendar";
 import type { TaskItem } from "@/types/tasks";
+import { useLanguage } from "@/context/LanguageContext";
+import { moduleMeta, stageLabel } from "@/lib/i18n";
 
 const WEEKDAYS = ["一", "二", "三", "四", "五", "六", "日"];
-const CELL_ENTRY_LIMIT = 3;
+const CELL_ENTRY_LIMIT = 2;
 
 function DeadlineLabel({ entry }: { entry: DeadlineEntry }) {
-  const meta = MODULE_META[entry.module];
+  const { language } = useLanguage();
+  const meta = moduleMeta(entry.module, language);
   return (
     <span
       className="calendar-deadline-entry"
       style={{ "--deadline-color": meta.color } as React.CSSProperties}
     >
-      <i aria-hidden="true" />
       <span>
-        <strong>{entry.title}</strong>
+        <strong>{entry.workflowName ? stageLabel(entry.title, language) : entry.title}</strong>
         {entry.workflowName && <small>{entry.workflowName}</small>}
       </span>
     </span>
@@ -59,6 +60,7 @@ function DayDeadlineDialog({
   onClose: () => void;
   onOpen: (item: TaskItem) => void;
 }) {
+  const { language, tr } = useLanguage();
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
@@ -72,21 +74,21 @@ function DayDeadlineDialog({
       <button
         className="deadline-day-backdrop"
         onClick={onClose}
-        aria-label="关闭当日 deadline 详情"
+        aria-label={tr("关闭当日 deadline 详情", "Close daily deadline details")}
       />
       <section className="deadline-day-dialog">
         <header>
           <div>
-            <span>当日 deadline</span>
-            <h2>{format(parseISO(date), "M月d日 EEEE", { locale: zhCN })}</h2>
+            <span>{tr("当日 deadline", "Daily Deadlines")}</span>
+            <h2>{format(parseISO(date), language === "en" ? "EEEE, MMMM d" : "M月d日 EEEE", { locale: language === "en" ? enUS : zhCN })}</h2>
           </div>
-          <button className="icon-button" onClick={onClose} aria-label="关闭">
+          <button className="icon-button" onClick={onClose} aria-label={tr("关闭", "Close")}>
             <X size={18} />
           </button>
         </header>
         <div className="deadline-day-list">
           {entries.map((entry) => {
-            const meta = MODULE_META[entry.module];
+            const meta = moduleMeta(entry.module, language);
             return (
               <button
                 key={entry.id}
@@ -96,10 +98,10 @@ function DayDeadlineDialog({
               >
                 <span className="deadline-day-type-dot" aria-hidden="true" />
                 <span>
-                  <strong>{entry.title}</strong>
+                  <strong>{entry.workflowName ? stageLabel(entry.title, language) : entry.title}</strong>
                   <small>
                     {meta.label}
-                    {entry.workflowName ? ` · 流程：${entry.workflowName}` : ""}
+                    {entry.workflowName ? tr(` · 流程：${entry.workflowName}`, ` · Process: ${entry.workflowName}`) : ""}
                   </small>
                 </span>
                 <ChevronRight size={16} />
@@ -119,6 +121,7 @@ export function DeadlineCalendarView({
   items: TaskItem[];
   onOpen: (item: TaskItem) => void;
 }) {
+  const { language, tr } = useLanguage();
   const entries = useMemo(() => collectDeadlineEntries(items), [items]);
   const firstMonth = useMemo(() => earliestDeadlineMonth(entries), [entries]);
   const [month, setMonth] = useState(firstMonth);
@@ -141,14 +144,14 @@ export function DeadlineCalendarView({
     <section className="deadline-calendar-view">
       <header className="deadline-calendar-header">
         <div>
-          <span className="eyebrow">Deadline 规划</span>
-          <h1>Deadline 日历</h1>
-          <p>按日期查看任务与流程阶段，点击日期可展开当日详情。</p>
+          <span className="eyebrow">{tr("Deadline 规划", "Deadline Planning")}</span>
+          <h1>{tr("Deadline 日历", "Deadline Calendar")}</h1>
+          <p>{tr("按日期查看任务与流程阶段，点击日期可展开当日详情。", "View tasks and process stages by date. Select a date for details.")}</p>
         </div>
         <div className="deadline-calendar-summary">
           <ListTodo size={17} />
           <strong>{entries.length}</strong>
-          <span>个待完成 deadline</span>
+          <span>{tr("个待完成 deadline", "open deadlines")}</span>
         </div>
       </header>
 
@@ -156,21 +159,21 @@ export function DeadlineCalendarView({
         <div className="deadline-month-toolbar">
           <div>
             <CalendarRange size={18} />
-            <h2>{format(visibleMonth, "yyyy年 M月")}</h2>
+            <h2>{format(visibleMonth, language === "en" ? "MMMM yyyy" : "yyyy年 M月", { locale: language === "en" ? enUS : zhCN })}</h2>
           </div>
           <div className="deadline-month-actions">
             <button
               onClick={() => setMonth(subMonths(visibleMonth, 1))}
               disabled={!canGoPrevious}
-              aria-label="上一个月"
-              title={canGoPrevious ? "上一个月" : "已经是最早的 deadline 月份"}
+              aria-label={tr("上一个月", "Previous month")}
+              title={canGoPrevious ? tr("上一个月", "Previous month") : tr("已经是最早的 deadline 月份", "This is the earliest deadline month")}
             >
               <ChevronLeft size={18} />
             </button>
             <button
               onClick={() => setMonth(addMonths(visibleMonth, 1))}
-              aria-label="下一个月"
-              title="下一个月"
+              aria-label={tr("下一个月", "Next month")}
+              title={tr("下一个月", "Next month")}
             >
               <ChevronRight size={18} />
             </button>
@@ -186,7 +189,9 @@ export function DeadlineCalendarView({
                 role="columnheader"
                 key={weekday}
               >
-                周{weekday}
+                {language === "en"
+                  ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index]
+                  : `周${weekday}`}
               </div>
             ))}
             {days.map((day) => {
@@ -203,7 +208,7 @@ export function DeadlineCalendarView({
                     {dayEntries.length > CELL_ENTRY_LIMIT && (
                       <span
                         className="deadline-calendar-more"
-                        aria-label={`另有 ${dayEntries.length - CELL_ENTRY_LIMIT} 个 deadline`}
+                        aria-label={tr(`另有 ${dayEntries.length - CELL_ENTRY_LIMIT} 个 deadline`, `${dayEntries.length - CELL_ENTRY_LIMIT} more deadlines`)}
                       >
                         ……
                       </span>
@@ -222,7 +227,7 @@ export function DeadlineCalendarView({
                   data-today={isToday(day)}
                   key={dateKey}
                   onClick={() => setSelectedDate(dateKey)}
-                  aria-label={`${format(day, "M月d日")}，${dayEntries.length} 个 deadline`}
+                  aria-label={tr(`${format(day, "M月d日")}，${dayEntries.length} 个 deadline`, `${format(day, "MMMM d", { locale: enUS })}, ${dayEntries.length} deadlines`)}
                   role="gridcell"
                 >
                   {content}

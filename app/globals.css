@@ -568,7 +568,7 @@ select:focus-visible,
 .workflow-card-actions {
   position: absolute;
   top: 8px;
-  right: 10px;
+  right: 0;
   display: flex;
   flex: 0 0 auto;
   align-items: flex-end;
@@ -584,6 +584,7 @@ select:focus-visible,
   color: #111111;
   font-size: 13px;
   font-weight: 650;
+  margin-right: 10px;
   white-space: nowrap;
 }
 
@@ -1258,15 +1259,19 @@ select:focus-visible,
 .deadline-calendar-header h1 {
   margin: 0;
   color: #f5f8ff;
-  font-size: clamp(26px, 2.2vw, 34px);
+  font-size: clamp(29px, 2.2vw, 37px);
   font-weight: 650;
   letter-spacing: -0.045em;
+}
+
+.deadline-calendar-header .eyebrow {
+  font-size: 13px;
 }
 
 .deadline-calendar-header p {
   margin: 7px 0 0;
   color: #9aaac2;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .deadline-calendar-summary {
@@ -1279,13 +1284,13 @@ select:focus-visible,
   background: rgba(26, 40, 66, 0.48);
   border: 1px solid rgba(205, 222, 250, 0.16);
   border-radius: 13px;
-  font-size: 11px;
+  font-size: 14px;
   white-space: nowrap;
 }
 
 .deadline-calendar-summary strong {
   color: #f5f8ff;
-  font-size: 16px;
+  font-size: 19px;
 }
 
 .deadline-calendar-shell {
@@ -1324,7 +1329,7 @@ select:focus-visible,
 .deadline-month-toolbar h2 {
   margin: 0;
   color: #f2f6ff;
-  font-size: 18px;
+  font-size: 21px;
   font-weight: 640;
   letter-spacing: -0.02em;
 }
@@ -1360,8 +1365,8 @@ select:focus-visible,
 
 .deadline-calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, minmax(104px, 1fr));
-  min-width: 728px;
+  grid-template-columns: repeat(7, minmax(130px, 1fr));
+  min-width: 910px;
   gap: 6px;
 }
 
@@ -1371,7 +1376,7 @@ select:focus-visible,
   justify-content: center;
   min-height: 42px;
   color: #98a9c1;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 620;
 }
 
@@ -1430,7 +1435,7 @@ button.deadline-date-cell:hover {
 .deadline-date-number {
   flex: 0 0 auto;
   color: #6d737c;
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 650;
 }
 
@@ -1448,17 +1453,6 @@ button.deadline-date-cell:hover {
   display: flex;
   align-items: flex-start;
   min-width: 0;
-  gap: 6px;
-}
-
-.calendar-deadline-entry > i {
-  flex: 0 0 auto;
-  width: 7px;
-  height: 7px;
-  margin-top: 4px;
-  background: var(--deadline-color);
-  border-radius: 50%;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--deadline-color) 12%, white);
 }
 
 .calendar-deadline-entry > span {
@@ -1477,14 +1471,14 @@ button.deadline-date-cell:hover {
 }
 
 .calendar-deadline-entry strong {
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 650;
   line-height: 1.35;
 }
 
 .calendar-deadline-entry small {
   opacity: 0.72;
-  font-size: 8px;
+  font-size: 11px;
   line-height: 1.25;
 }
 
@@ -1493,12 +1487,12 @@ button.deadline-date-cell:hover {
   place-items: center;
   flex: 0 0 auto;
   width: 30px;
-  height: 18px;
+  height: 21px;
   margin-top: auto;
   color: #748198;
   background: #edf2f8;
   border-radius: 7px;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: -0.18em;
 }
@@ -1548,7 +1542,7 @@ button.deadline-date-cell:hover {
 
 .deadline-day-dialog > header span {
   color: #8c929b;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1556,7 +1550,7 @@ button.deadline-date-cell:hover {
 
 .deadline-day-dialog > header h2 {
   margin: 5px 0 0;
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 650;
   letter-spacing: -0.025em;
 }
@@ -1610,7 +1604,7 @@ button.deadline-date-cell:hover {
 .deadline-day-item strong {
   overflow: hidden;
   color: var(--deadline-color);
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1619,7 +1613,7 @@ button.deadline-date-cell:hover {
 .deadline-day-item small {
   overflow: hidden;
   color: #8b9098;
-  font-size: 9px;
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2323,15 +2317,19 @@ button.deadline-date-cell:hover {
 
 .reminder-settings-grid {
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  align-items: start;
+  align-items: stretch;
 }
 
 .reminder-settings-grid .theme-settings-card {
-  grid-column: span 7;
+  grid-column: span 5;
+}
+
+.language-settings-card {
+  grid-column: span 3;
 }
 
 .notification-settings-card {
-  grid-column: span 5;
+  grid-column: span 4;
 }
 
 .reminder-schedule-card,
@@ -2385,6 +2383,56 @@ button.deadline-date-cell:hover {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.language-options {
+  display: grid;
+  gap: 8px;
+}
+
+.language-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 28px 8px 11px;
+  gap: 8px;
+  color: #535a64;
+  background: #f7f8fa;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 11px;
+  text-align: left;
+}
+
+.language-option strong {
+  font-size: 12px;
+}
+
+.language-option small {
+  margin-left: auto;
+  color: #969aa1;
+  font-size: 9px;
+}
+
+.language-option > i {
+  position: absolute;
+  right: 11px;
+  width: 8px;
+  height: 8px;
+  background: #d7dce3;
+  border-radius: 50%;
+}
+
+.language-option[data-active="true"] {
+  color: #315d9e;
+  background: #edf4ff;
+  border-color: rgba(91, 141, 239, 0.4);
+  box-shadow: 0 0 0 2px rgba(91, 141, 239, 0.08);
+}
+
+.language-option[data-active="true"] > i {
+  background: #5b8def;
+  box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.12);
 }
 
 .theme-option {
@@ -3911,7 +3959,7 @@ html[data-theme="bright"] .composer-dock {
   }
 
   .deadline-calendar-grid {
-    grid-template-columns: repeat(7, 108px);
+    grid-template-columns: repeat(7, 130px);
     min-width: max-content;
   }
 }
@@ -3944,7 +3992,7 @@ html[data-theme="bright"] .composer-dock {
   }
 
   .deadline-month-toolbar h2 {
-    font-size: 16px;
+    font-size: 19px;
   }
 
   .deadline-calendar-scroll {
@@ -3952,7 +4000,7 @@ html[data-theme="bright"] .composer-dock {
   }
 
   .deadline-calendar-grid {
-    grid-template-columns: repeat(7, 96px);
+    grid-template-columns: repeat(7, 120px);
     gap: 5px;
   }
 

@@ -2,6 +2,7 @@
 
 import { RotateCcw } from "lucide-react";
 import type { PendingAction } from "@/types/tasks";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function ToastStack({
   actions,
@@ -14,6 +15,7 @@ export function ToastStack({
   now: number;
   avoidComposer: boolean;
 }) {
+  const { language, tr } = useLanguage();
   const visible = actions.slice(-3).reverse();
   const hidden = actions.length - visible.length;
 
@@ -24,13 +26,13 @@ export function ToastStack({
     >
       {hidden > 0 && (
         <div className="undo-toast summary-toast">
-          <span>还有 {hidden} 个操作可撤销</span>
+          <span>{tr(`还有 ${hidden} 个操作可撤销`, `${hidden} more actions can be undone`)}</span>
           <button
             onClick={() =>
               actions.slice(0, hidden).forEach((action) => onUndo(action.id))
             }
           >
-            全部撤销
+            {tr("全部撤销", "Undo All")}
           </button>
         </div>
       )}
@@ -44,11 +46,17 @@ export function ToastStack({
         return (
           <div className="undo-toast" key={action.id}>
             <div className="undo-toast-copy">
-              <span>{action.label}</span>
+              <span>{language === "en"
+                ? action.type === "delete"
+                  ? `Deleted “${action.itemSnapshot.title}”`
+                  : action.type === "stage"
+                    ? `Completed a stage in “${action.itemSnapshot.title}”`
+                    : `Completed “${action.itemSnapshot.title}”`
+                : action.label}</span>
               <small>{remaining}</small>
             </div>
             <button onClick={() => onUndo(action.id)}>
-              <RotateCcw size={14} /> 撤销
+              <RotateCcw size={14} /> {tr("撤销", "Undo")}
             </button>
             <span
               className="undo-progress"
