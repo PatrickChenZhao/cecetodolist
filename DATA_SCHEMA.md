@@ -31,6 +31,7 @@ interface BaseItem {
   createdAt: string;
   updatedAt: string;
   completedAt: string | null;
+  notes?: string;
 }
 ```
 
@@ -53,10 +54,24 @@ interface PersonalItem extends BaseItem {
   module: "personal";
   urgency: "urgent" | "week" | "month" | "notUrgent";
   dueDate: string | null;
+  table?: string[][] | null;
+  tableColumnWidths?: number[] | null;
 }
 ```
 
 `notUrgent` 的 `dueDate` 必须为 `null`。
+个人表格初始为 5 列、30 行，之后可以增删行列；`tableColumnWidths` 保存每列宽度，每个单元格只保存文本。
+
+## ProjectEventItem
+
+```ts
+interface ProjectEventItem extends BaseItem {
+  module: "social" | "advertising";
+  taskType: "event";
+  urgency: "urgent" | "week" | "month" | "notUrgent";
+  dueDate: string | null;
+}
+```
 
 ## WorkflowStage
 
@@ -111,6 +126,7 @@ interface WorkProcessItem extends BaseItem {
 ```ts
 interface WorkflowItem extends BaseItem {
   module: "social" | "advertising";
+  taskType?: "process";
   currentStageId: string;
   stages: WorkflowStage[];
 }
@@ -121,7 +137,12 @@ interface WorkflowItem extends BaseItem {
 ## TaskItem
 
 ```ts
-type TaskItem = WorkItem | WorkProcessItem | PersonalItem | WorkflowItem;
+type TaskItem =
+  | WorkItem
+  | WorkProcessItem
+  | PersonalItem
+  | ProjectEventItem
+  | WorkflowItem;
 ```
 
 ## DeskSettings

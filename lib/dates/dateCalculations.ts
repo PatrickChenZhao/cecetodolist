@@ -134,14 +134,7 @@ export function getCurrentStage(item: AnyWorkflowItem) {
 }
 
 export function getItemDueDate(item: TaskItem) {
-  if (item.module === "social" || item.module === "advertising") {
-    const currentStage = item.stages.find(
-      (stage) => stage.id === item.currentStageId,
-    ) ?? item.stages.find((stage) => stage.status === "active")
-      ?? item.stages[0];
-    return currentStage?.dueDate ?? null;
-  }
-  if (item.module === "work" && item.workType === "process") {
+  if (isWorkflowTask(item)) {
     return getCurrentStage(item)?.dueDate ?? null;
   }
   return "dueDate" in item ? item.dueDate : null;

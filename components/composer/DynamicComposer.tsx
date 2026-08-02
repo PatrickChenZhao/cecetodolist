@@ -24,6 +24,7 @@ import {
 import type {
   ModuleType,
   PersonalItem,
+  ProjectEventItem,
   TaskItem,
   WorkItem,
   WorkProcessItem,
@@ -56,6 +57,7 @@ function baseItem(module: ModuleType, title: string) {
     createdAt: now,
     updatedAt: now,
     completedAt: null,
+    notes: "",
   };
 }
 
@@ -118,15 +120,46 @@ export function DynamicComposer({
   const [personalUrgency, setPersonalUrgency] =
     useState<PersonalItem["urgency"]>("week");
   const [socialTitle, setSocialTitle] = useState("");
+  const [socialType, setSocialType] = useState<"process" | "event">("process");
+  const [socialUrgency, setSocialUrgency] =
+    useState<ProjectEventItem["urgency"]>("week");
   const [socialStages, setSocialStages] = useState(() =>
     createWorkflowStages("social", todayKey())
   );
   const [advertisingTitle, setAdvertisingTitle] = useState("");
+  const [advertisingType, setAdvertisingType] =
+    useState<"process" | "event">("process");
+  const [advertisingUrgency, setAdvertisingUrgency] =
+    useState<ProjectEventItem["urgency"]>("week");
   const [advertisingStages, setAdvertisingStages] = useState(() =>
     createWorkflowStages("advertising", todayKey())
   );
   const Icon = icons[module];
   const meta = moduleMeta(module, language);
+  const selectedType = module === "work"
+    ? workType
+    : module === "social"
+      ? socialType
+      : module === "advertising"
+        ? advertisingType
+        : null;
+  const selectedEventUrgency = module === "work"
+    ? workUrgency
+    : module === "social"
+      ? socialUrgency
+      : advertisingUrgency;
+
+  function setSelectedType(type: "process" | "event") {
+    if (module === "work") setWorkType(type);
+    if (module === "social") setSocialType(type);
+    if (module === "advertising") setAdvertisingType(type);
+  }
+
+  function setSelectedEventUrgency(urgency: ProjectEventItem["urgency"]) {
+    if (module === "work") setWorkUrgency(urgency);
+    if (module === "social") setSocialUrgency(urgency);
+    if (module === "advertising") setAdvertisingUrgency(urgency);
+  }
 
   const title = module === "work"
     ? workTitle
@@ -173,8 +206,28 @@ export function DynamicComposer({
         module: "personal",
         urgency: personalUrgency,
         dueDate: dueDateForPersonal(personalUrgency),
+        table: null,
+        tableColumnWidths: null,
       });
       setPersonalTitle("");
+      return;
+    }
+
+    const projectType = module === "social" ? socialType : advertisingType;
+    const projectUrgency = module === "social"
+      ? socialUrgency
+      : advertisingUrgency;
+    if (projectType === "event") {
+      const item: ProjectEventItem = {
+        ...baseItem(module, title),
+        module,
+        taskType: "event",
+        urgency: projectUrgency,
+        dueDate: dueDateForPersonal(projectUrgency),
+      };
+      onCreate(item);
+      if (module === "social") setSocialTitle("");
+      else setAdvertisingTitle("");
       return;
     }
 
@@ -182,6 +235,7 @@ export function DynamicComposer({
     const item: WorkflowItem = {
       ...baseItem(module, title),
       module,
+      taskType: "process",
       currentStageId: stages[0].id,
       stages: stages.map((stage, index) => ({
         ...stage,
@@ -210,9 +264,13 @@ export function DynamicComposer({
             ? tr("输入工作流程名称……", "Enter a work process…")
             : tr("输入工作事件……", "Enter a work task…")
           : module === "social"
-            ? tr("输入内容名称……", "Enter a content title…")
+            ? selectedType === "process"
+              ? tr("输入内容流程名称……", "Enter a content process…")
+              : tr("输入自媒体事件……", "Enter a content task…")
             : module === "advertising"
-              ? tr("输入广告项目内容……", "Enter an ad project…")
+              ? selectedType === "process"
+                ? tr("输入广告流程名称……", "Enter an ad process…")
+                : tr("输入广告事件……", "Enter an ad task…")
               : tr("输入生活事项……", "Enter a personal task…")
       }
       onChange={(event) => {
@@ -265,21 +323,21 @@ export function DynamicComposer({
               </select>
               <ChevronDown size={14} />
             </label>
-            {module === "work" && (
+            {module !== "personal" && (
               <div
                 className="work-type-toggle"
                 role="group"
-                aria-label={tr("工作项目类型", "Work project type")}
+                aria-label={tr(`${meta.label}类型`, `${meta.label} type`)}
               >
                 <button
-                  data-active={workType === "process"}
-                  onClick={() => setWorkType("process")}
+                  data-active={selectedType === "process"}
+                  onClick={() => setSelectedType("process")}
                 >
                   {tr("流程", "Process")}
                 </button>
                 <button
-                  data-active={workType === "event"}
-                  onClick={() => setWorkType("event")}
+                  data-active={selectedType === "event"}
+                  onClick={() => setSelectedType("event")}
                 >
                   {tr("事件", "Task")}
                 </button>
@@ -298,18 +356,18 @@ export function DynamicComposer({
 
         <div className="composer-title-input">{input}</div>
 
-        {module === "work" && workType === "event" && (
+        {module !== "personal" && selectedType === "event" && (
           <div className="composer-options">
             <span className="option-label">{tr("紧急程度", "Urgency")}</span>
             <div className="segmented-control">
               {(Object.keys(
                 PERSONAL_URGENCY_LABELS,
-              ) as WorkItem["urgency"][]).map(
+              ) as ProjectEventItem["urgency"][]).map(
                 (urgency) => (
                   <button
                     key={urgency}
-                    data-active={workUrgency === urgency}
-                    onClick={() => setWorkUrgency(urgency)}
+                    data-active={selectedEventUrgency === urgency}
+                    onClick={() => setSelectedEventUrgency(urgency)}
                   >
                     {urgencyLabel(urgency, language)}
                   </button>
@@ -352,7 +410,7 @@ export function DynamicComposer({
           </div>
         )}
 
-        {module === "social" && (
+        {module === "social" && socialType === "process" && (
           <WorkflowDates
             module="social"
             stages={socialStages}
@@ -360,7 +418,7 @@ export function DynamicComposer({
           />
         )}
 
-        {module === "advertising" && (
+        {module === "advertising" && advertisingType === "process" && (
           <WorkflowDates
             module="advertising"
             stages={advertisingStages}

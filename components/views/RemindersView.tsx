@@ -20,6 +20,7 @@ import {
   getCurrentStage,
   getItemDueDate,
   isDueWithinNextDays,
+  isWorkflowTask,
 } from "@/lib/dates/dateCalculations";
 import { sortTasks } from "@/lib/dates/sorting";
 import { useLanguage } from "@/context/LanguageContext";
@@ -38,7 +39,7 @@ const CUSTOM_TIME_DEFAULTS = [
 
 function getAttentionStageLabel(item: TaskItem, language: DeskSettings["language"]) {
   if (item.module === "personal") return null;
-  if (item.module === "work" && item.workType === "event") {
+  if (!isWorkflowTask(item)) {
     return language === "en" ? "In Progress" : "执行中";
   }
   return stageLabel(getCurrentStage(item).name, language);

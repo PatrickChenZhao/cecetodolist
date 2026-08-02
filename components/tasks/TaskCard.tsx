@@ -62,10 +62,7 @@ export function TaskCard({ item, onOpen, onComplete }: TaskCardProps) {
   const dueDate = getItemDueDate(item);
   const overdue = isDateOverdue(dueDate);
   const workflow = isWorkflowTask(item) ? item : null;
-  const event = item.module === "personal"
-    || (item.module === "work" && item.workType === "event")
-    ? item
-    : null;
+  const event = isWorkflowTask(item) ? null : item;
   const currentStage = workflow ? getCurrentStage(workflow) : null;
 
   const urgency = event ? urgencyLabel(event.urgency, language) : null;

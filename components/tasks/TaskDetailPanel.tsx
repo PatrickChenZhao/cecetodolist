@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Clock3,
   RotateCcw,
+  Table2,
   Trash2,
   X,
 } from "lucide-react";
@@ -31,6 +32,11 @@ import type {
 } from "@/types/tasks";
 import { useLanguage } from "@/context/LanguageContext";
 import { moduleMeta, stageLabel, urgencyLabel } from "@/lib/i18n";
+import {
+  createDefaultColumnWidths,
+  createEmptyPersonalTable,
+  PersonalTableDialog,
+} from "@/components/tasks/PersonalTableDialog";
 
 interface TaskDetailPanelProps {
   item: TaskItem;
@@ -48,18 +54,26 @@ export function TaskDetailPanel({
   onDelete,
 }: TaskDetailPanelProps) {
   const { language, tr } = useLanguage();
-  const workEvent = item.module === "work" && item.workType === "event"
-    ? item
-    : null;
   const workProcess = item.module === "work" && item.workType === "process"
     ? item
     : null;
-  const eventItem = item.module === "personal" ? item : workEvent;
   const workflow = isWorkflowTask(item) ? item : null;
+  const eventItem = isWorkflowTask(item) ? null : item;
   const initialWorkProcessStage = workProcess
     ? getCurrentStage(workProcess)
     : null;
   const [title, setTitle] = useState(item.title);
+  const [notes, setNotes] = useState(item.notes ?? "");
+  const [tableData, setTableData] = useState<string[][] | null>(
+    item.module === "personal" ? item.table ?? null : null,
+  );
+  const [tableColumnWidths, setTableColumnWidths] = useState<number[]>(
+    item.module === "personal"
+      ? item.tableColumnWidths
+        ?? createDefaultColumnWidths(item.table?.[0]?.length ?? 5)
+      : [],
+  );
+  const [tableOpen, setTableOpen] = useState(false);
   const [eventUrgency, setEventUrgency] = useState<EventUrgency>(
     eventItem?.urgency ?? "week",
   );
@@ -78,11 +92,13 @@ export function TaskDetailPanel({
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key !== "Escape") return;
+      if (tableOpen) setTableOpen(false);
+      else onClose();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [item, onClose]);
+  }, [item, onClose, tableOpen]);
 
   const meta = moduleMeta(item.module, language);
   const currentStage = workflow ? getCurrentStage(workflow) : null;
@@ -92,13 +108,17 @@ export function TaskDetailPanel({
 
   function save() {
     if (!title.trim()) return;
-    if (workEvent) {
+    if (eventItem) {
       onSave({
-        ...workEvent,
+        ...eventItem,
         title: title.trim(),
         urgency: eventUrgency,
         dueDate,
-      });
+        notes,
+        ...(eventItem.module === "personal"
+          ? { table: tableData, tableColumnWidths }
+          : {}),
+      } as TaskItem);
     } else if (workProcess) {
       const nextStages = stages.map((stage) =>
         stage.id === workProcess.currentStageId
@@ -108,23 +128,27 @@ export function TaskDetailPanel({
       onSave({
         ...workProcess,
         title: title.trim(),
+        notes,
         dueDate: dueDate ?? todayKey(),
         stages: nextStages,
-      });
-    } else if (item.module === "personal") {
-      onSave({
-        ...item,
-        title: title.trim(),
-        urgency: eventUrgency,
-        dueDate,
       });
     } else if (workflow) {
       onSave({
         ...workflow,
         title: title.trim(),
+        notes,
         stages: stages as WorkflowStage[],
       });
     }
+  }
+
+  function saveTable() {
+    if (item.module !== "personal" || !tableData) return;
+    onSave({
+      ...item,
+      table: tableData.map((row) => [...row]),
+      tableColumnWidths: [...tableColumnWidths],
+    });
   }
 
   function returnStageToIncomplete(stageId: string) {
@@ -185,6 +209,37 @@ export function TaskDetailPanel({
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               rows={3}
+            />
+          </label>
+
+          <label className="detail-field detail-notes-field">
+            <span className="detail-field-heading">
+              <span>{tr("备注", "Notes")}</span>
+              {item.module === "personal" && (
+                <button
+                  type="button"
+                  className="detail-add-table-button"
+                  aria-label={tableData
+                    ? tr("编辑表格", "Edit Table")
+                    : tr("新增表格", "Add Table")}
+                  onClick={() => {
+                    setTableData((current) => current ?? createEmptyPersonalTable());
+                    setTableColumnWidths((current) => current.length
+                      ? current
+                      : createDefaultColumnWidths());
+                    setTableOpen(true);
+                  }}
+                >
+                  <Table2 size={13} />
+                  {tableData ? tr("编辑表格", "Edit Table") : tr("新增表格", "Add Table")}
+                </button>
+              )}
+            </span>
+            <textarea
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              rows={4}
+              placeholder={tr("添加任务备注……", "Add task notes…")}
             />
           </label>
 
@@ -355,6 +410,17 @@ export function TaskDetailPanel({
           </div>
         </footer>
       </aside>
+      {tableOpen && tableData && item.module === "personal" && (
+        <PersonalTableDialog
+          title={title || item.title}
+          data={tableData}
+          columnWidths={tableColumnWidths}
+          onChange={setTableData}
+          onColumnWidthsChange={setTableColumnWidths}
+          onSave={saveTable}
+          onClose={() => setTableOpen(false)}
+        />
+      )}
     </div>
   );
 }

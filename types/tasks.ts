@@ -15,6 +15,7 @@ export interface BaseItem {
   createdAt: string;
   updatedAt: string;
   completedAt: string | null;
+  notes?: string;
 }
 
 export interface WorkItem extends BaseItem {
@@ -44,6 +45,15 @@ export interface PersonalItem extends BaseItem {
   module: "personal";
   urgency: EventUrgency;
   dueDate: string | null;
+  table?: string[][] | null;
+  tableColumnWidths?: number[] | null;
+}
+
+export interface ProjectEventItem extends BaseItem {
+  module: "social" | "advertising";
+  taskType: "event";
+  urgency: EventUrgency;
+  dueDate: string | null;
 }
 
 export interface WorkflowStage {
@@ -57,13 +67,19 @@ export interface WorkflowStage {
 
 export interface WorkflowItem extends BaseItem {
   module: "social" | "advertising";
+  taskType?: "process";
   currentStageId: string;
   stages: WorkflowStage[];
 }
 
 export type AnyWorkflowStage = WorkflowStage | WorkProcessStage;
 export type AnyWorkflowItem = WorkflowItem | WorkProcessItem;
-export type TaskItem = WorkItem | WorkProcessItem | PersonalItem | WorkflowItem;
+export type TaskItem =
+  | WorkItem
+  | WorkProcessItem
+  | PersonalItem
+  | ProjectEventItem
+  | WorkflowItem;
 
 export interface DeskSettings {
   dashboardTitle: string;

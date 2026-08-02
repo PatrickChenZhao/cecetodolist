@@ -63,6 +63,7 @@ type Action =
   | { type: "apply"; item: TaskItem; pending: PendingAction }
   | { type: "remove"; itemId: string; pending: PendingAction }
   | { type: "undo"; actionId: string }
+  | { type: "dismissPending"; actionId: string }
   | { type: "purge"; now: number }
   | { type: "settings"; settings: DeskSettings }
   | {
@@ -153,6 +154,13 @@ function reducer(state: DeskState, action: Action): DeskState {
         notice: stateText(state, "已恢复", "Restored"),
       };
     }
+    case "dismissPending":
+      return {
+        ...state,
+        pendingActions: state.pendingActions.filter(
+          (entry) => entry.id !== action.actionId,
+        ),
+      };
     case "purge":
       return {
         ...state,
@@ -214,6 +222,7 @@ interface TaskContextValue extends DeskState {
   restoreCompletedItem: (itemId: string) => void;
   deleteItem: (itemId: string) => void;
   undoAction: (actionId: string) => void;
+  dismissPendingAction: (actionId: string) => void;
   updateSettings: (patch: Partial<DeskSettings>) => void;
   importBackup: (
     payload: BackupPayload,
@@ -421,6 +430,10 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "undo", actionId });
   }, []);
 
+  const dismissPendingAction = useCallback((actionId: string) => {
+    dispatch({ type: "dismissPending", actionId });
+  }, []);
+
   const updateSettings = useCallback((patch: Partial<DeskSettings>) => {
     dispatch({
       type: "settings",
@@ -444,6 +457,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     restoreCompletedItem,
     deleteItem,
     undoAction,
+    dismissPendingAction,
     updateSettings,
     importBackup,
     dismissWarning: () => dispatch({ type: "dismissWarning" }),
@@ -457,6 +471,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     restoreCompletedItem,
     deleteItem,
     undoAction,
+    dismissPendingAction,
     updateSettings,
     importBackup,
   ]);

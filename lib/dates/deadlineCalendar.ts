@@ -7,6 +7,7 @@ import {
   startOfWeek,
 } from "date-fns";
 import { MODULE_ORDER } from "@/lib/constants";
+import { isWorkflowTask } from "@/lib/dates/dateCalculations";
 import type { ModuleType, TaskItem } from "@/types/tasks";
 
 export interface DeadlineEntry {
@@ -22,7 +23,10 @@ export function collectDeadlineEntries(items: TaskItem[]): DeadlineEntry[] {
   const entries = items.flatMap((item): DeadlineEntry[] => {
     if (item.status !== "active") return [];
 
-    if (item.module === "social" || item.module === "advertising") {
+    if (
+      isWorkflowTask(item)
+      && (item.module === "social" || item.module === "advertising")
+    ) {
       return item.stages
         .filter((stage) => stage.status !== "completed")
         .map((stage) => ({

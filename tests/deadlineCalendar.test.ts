@@ -71,6 +71,24 @@ describe("deadline 日历", () => {
     expect(stages.slice(1).every((stage) => stage.dueDate === null)).toBe(true);
   });
 
+  it("自媒体和广告事件按事项截止日期加入日历", () => {
+    const event: TaskItem = {
+      ...base,
+      id: "ad-event-1",
+      module: "advertising",
+      taskType: "event",
+      title: "确认投放预算",
+      urgency: "week",
+      dueDate: "2026-08-09",
+    };
+
+    expect(collectDeadlineEntries([event])[0]).toMatchObject({
+      date: "2026-08-09",
+      title: "确认投放预算",
+      workflowName: null,
+    });
+  });
+
   it("月份使用周一开始的真实日历网格", () => {
     const days = calendarMonthDays(new Date(2026, 7, 1));
     expect(days[0]).toEqual(new Date(2026, 6, 27));
