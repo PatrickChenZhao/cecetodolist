@@ -121,6 +121,29 @@ export function PersonalDeskApp() {
     || view === "advertising"
     || view === "personal";
 
+  function collapseComposerFromBlankArea(
+    event: React.MouseEvent<HTMLElement>,
+  ) {
+    if (!showComposer || composerCollapsed) return;
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest([
+      "a",
+      "button",
+      "input",
+      "textarea",
+      "select",
+      "label",
+      "article",
+      "[role='button']",
+      "[role='dialog']",
+      "[role='tab']",
+      "[contenteditable='true']",
+      "[tabindex]:not([tabindex='-1'])",
+    ].join(","))) return;
+    setComposerCollapsed(true);
+  }
+
   return (
     <LanguageProvider language={language}>
     <div
@@ -143,6 +166,7 @@ export function PersonalDeskApp() {
       />
 
       <main
+        onClick={collapseComposerFromBlankArea}
         className={`main-content ${
           tasks.settings.sidebarCollapsed ? "sidebar-is-collapsed" : ""
         } ${showComposer ? "with-composer" : ""} ${
