@@ -1,17 +1,19 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, X } from "lucide-react";
 import type { PendingAction } from "@/types/tasks";
 import { useLanguage } from "@/context/LanguageContext";
 
 export function ToastStack({
   actions,
   onUndo,
+  onDismiss,
   now,
   avoidComposer,
 }: {
   actions: PendingAction[];
   onUndo: (id: string) => void;
+  onDismiss: (id: string) => void;
   now: number;
   avoidComposer: boolean;
 }) {
@@ -57,6 +59,14 @@ export function ToastStack({
             </div>
             <button onClick={() => onUndo(action.id)}>
               <RotateCcw size={14} /> {tr("撤销", "Undo")}
+            </button>
+            <button
+              className="undo-toast-close"
+              onClick={() => onDismiss(action.id)}
+              aria-label={tr(`关闭“${action.itemSnapshot.title}”的撤销提示`, `Dismiss undo notice for “${action.itemSnapshot.title}”`)}
+              title={tr("关闭提示", "Dismiss")}
+            >
+              <X size={14} />
             </button>
             <span
               className="undo-progress"

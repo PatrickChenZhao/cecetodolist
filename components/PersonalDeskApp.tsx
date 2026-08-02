@@ -292,6 +292,7 @@ export function PersonalDeskApp() {
       <ToastStack
         actions={tasks.pendingActions}
         onUndo={tasks.undoAction}
+        onDismiss={tasks.dismissPendingAction}
         now={tasks.clockNow}
         avoidComposer={showComposer}
       />

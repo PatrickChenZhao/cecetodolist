@@ -7,7 +7,7 @@ import {
 } from "@/lib/storage/backup";
 import { migrateStoredData } from "@/lib/storage/migrations";
 import { createWorkProcessStages } from "@/lib/dates/dateCalculations";
-import type { WorkItem } from "@/types/tasks";
+import type { PersonalItem, ProjectEventItem, WorkItem } from "@/types/tasks";
 
 function work(updatedAt = "2026-07-31T00:00:00.000Z"): WorkItem {
   return {
@@ -35,6 +35,55 @@ describe("JSON 备份", () => {
     const parsed = parseBackup(JSON.stringify(backup));
     expect(parsed.version).toBe("1.0.0");
     expect(parsed.items[0].title).toBe("整理本周计划");
+    expect(parsed.items[0].notes).toBe("");
+  });
+
+  it("保存备注、个人表格和项目事件类型", () => {
+    const personal: PersonalItem = {
+      id: "personal-table",
+      module: "personal",
+      title: "旅行准备",
+      status: "active",
+      urgency: "week",
+      dueDate: "2026-08-09",
+      notes: "记得确认住宿",
+      table: Array.from({ length: 30 }, (_, row) =>
+        Array.from({ length: 6 }, (_, column) => `${row + 1}-${column + 1}`)
+      ),
+      tableColumnWidths: [100, 110, 120, 130, 140, 150],
+      createdAt: "2026-08-02T00:00:00.000Z",
+      updatedAt: "2026-08-02T00:00:00.000Z",
+      completedAt: null,
+    };
+    const event: ProjectEventItem = {
+      id: "social-event",
+      module: "social",
+      taskType: "event",
+      title: "回复品牌邮件",
+      status: "active",
+      urgency: "urgent",
+      dueDate: "2026-08-02",
+      notes: "先确认报价",
+      createdAt: "2026-08-02T00:00:00.000Z",
+      updatedAt: "2026-08-02T00:00:00.000Z",
+      completedAt: null,
+    };
+
+    const parsed = parseBackup(JSON.stringify(
+      createBackup([personal, event], DEFAULT_SETTINGS, []),
+    ));
+    expect(parsed.items[0].notes).toBe("记得确认住宿");
+    expect(parsed.items[0].module === "personal" ? parsed.items[0].table : null)
+      .toHaveLength(30);
+    expect(parsed.items[0].module === "personal"
+      ? parsed.items[0].tableColumnWidths
+      : null).toEqual([100, 110, 120, 130, 140, 150]);
+    expect(parsed.items[1]).toMatchObject({
+      module: "social",
+      taskType: "event",
+      urgency: "urgent",
+      notes: "先确认报价",
+    });
   });
 
   it("非法 JSON 和重复 ID 被拒绝", () => {

@@ -24,6 +24,7 @@ const base = {
   createdAt: isoDate,
   updatedAt: isoDate,
   completedAt: nullableIsoDate,
+  notes: z.string().default(""),
 };
 
 const workEventItemSchema = z.object({
@@ -48,6 +49,35 @@ const legacyWorkItemSchema = z.object({
 const personalItemSchema = z.object({
   ...base,
   module: z.literal("personal"),
+  urgency: z.enum(["urgent", "week", "month", "notUrgent"]),
+  dueDate: dateKey.nullable(),
+  table: z.array(z.array(z.string()).min(1)).min(1).nullable().default(null),
+  tableColumnWidths: z.array(z.number().min(80).max(360)).min(1).nullable().default(null),
+}).superRefine((item, context) => {
+  if (!item.table) return;
+  const columnCount = item.table[0].length;
+  item.table.forEach((row, index) => {
+    if (row.length !== columnCount) {
+      context.addIssue({
+        code: "custom",
+        message: "表格每行的列数必须一致",
+        path: ["table", index],
+      });
+    }
+  });
+  if (item.tableColumnWidths && item.tableColumnWidths.length !== columnCount) {
+    context.addIssue({
+      code: "custom",
+      message: "表格列宽数量必须与列数一致",
+      path: ["tableColumnWidths"],
+    });
+  }
+});
+
+const projectEventItemSchema = z.object({
+  ...base,
+  module: z.enum(["social", "advertising"]),
+  taskType: z.literal("event"),
   urgency: z.enum(["urgent", "week", "month", "notUrgent"]),
   dueDate: dateKey.nullable(),
 });
@@ -117,6 +147,7 @@ const workProcessItemSchema = z.preprocess((value) => {
 const workflowItemSchema = z.object({
   ...base,
   module: z.enum(["social", "advertising"]),
+  taskType: z.literal("process").default("process"),
   currentStageId: z.string().min(1),
   stages: z.array(stageSchema),
 }).superRefine((item, context) => {
@@ -144,6 +175,7 @@ export const taskItemSchema = z.union([
   workEventItemSchema,
   legacyWorkItemSchema,
   personalItemSchema,
+  projectEventItemSchema,
   workflowItemSchema,
 ]);
 
