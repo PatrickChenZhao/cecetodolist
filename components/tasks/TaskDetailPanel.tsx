@@ -107,7 +107,7 @@ export function TaskDetailPanel({
     : 0;
 
   function save() {
-    if (!title.trim()) return;
+    if (!title.trim()) return false;
     if (eventItem) {
       onSave({
         ...eventItem,
@@ -140,6 +140,7 @@ export function TaskDetailPanel({
         stages: stages as WorkflowStage[],
       });
     }
+    return true;
   }
 
   function saveTable() {
@@ -391,14 +392,19 @@ export function TaskDetailPanel({
             <Trash2 size={15} /> {tr("删除", "Delete")}
           </button>
           <div>
-            <button className="secondary-button" onClick={save}>
+            <button
+              className="secondary-button detail-save-button"
+              onClick={() => {
+                if (save()) onClose();
+              }}
+            >
               {tr("保存修改", "Save Changes")}
             </button>
             {item.status === "active" && (
               <button
                 className="primary-button"
                 onClick={() => {
-                  save();
+                  if (!save()) return;
                   onComplete(item);
                   onClose();
                 }}

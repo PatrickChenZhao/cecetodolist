@@ -2391,6 +2391,20 @@ button.deadline-date-cell:hover {
   border-color: rgba(100, 116, 139, 0.3);
 }
 
+.detail-save-button {
+  min-width: 122px;
+  color: #39745b;
+  background: rgba(218, 242, 230, 0.96);
+  border-color: rgba(91, 166, 128, 0.25);
+  box-shadow: 0 5px 14px rgba(65, 135, 101, 0.1);
+}
+
+.detail-save-button:hover {
+  color: #2f674f;
+  background: #ceeada;
+  border-color: rgba(73, 145, 108, 0.34);
+}
+
 .delete-button {
   padding: 0 8px;
   color: #9a9ea5;
